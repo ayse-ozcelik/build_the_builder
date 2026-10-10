@@ -79,19 +79,50 @@ After a tool result the model sometimes says nothing, or carries on as if a fail
   kept by a transition and not by the model's memory.
 - The system prompt says: obey that sentence, and after every tool result either speak or call the next tool.
 
-## 6. Clean values before they reach the tool
+- An answer that arrives together with something else (a complaint, a question back, small talk) is still
+  an answer: the tool is called with it first, the rest is handled after the result. A model that replies
+  to the other half and skips the call makes the caller repeat themselves, and the repeat is counted
+  against the agent. Say this in the prompt of every node whose tool must be called for every answer.
+
+## 6. Limits are counted by code, never by the model
+
+Whenever the brief says "at most N", "only N times", "once", "after the Nth ...", build the limit from two
+parts (`builder/limits.py`), and take N from the brief:
+
+1. a counter that code increments, and
+2. a deterministic transition on that counter, first in the node's list, to the step that follows the limit.
+
+Do not write "count your attempts" in a prompt. A model keeps such a count most of the time, which is not
+enough when every case must pass three times.
+
+- **The counted event is a tool result** (a wrong answer, a failed try): `apply_tool_limit`. The tool's
+  post-hook adds 1 when the result shows the event. When the limit is reached the transition fires in the
+  same turn, before the model speaks again, and the next step says the fixed line.
+- **The counted event is something the agent says or offers**: nothing in a tool result shows it, so make
+  it a step. The offer is the fixed `on_enter` line of its own node, and the only way to that node is
+  through a counting gate (`add_counted_step`), which sends the call elsewhere once the limit is used up.
+  Keep the content of the offer out of the prompts of the nodes before the gate, so the model cannot
+  make the offer in its own words.
+- After the limit, the prompt of the following node states as a fact that the limited thing has already
+  happened and what remains open. `<counter>_state` is there for this.
+- Prefer a count the bank's API already returns (tries left, attempts used) over your own, when the tool
+  API file has one: route on that field and keep your counter as the second condition.
+- A counter only counts what reaches it. If the model can skip the tool call, the limit starts late:
+  see the last point of section 5.
+
+## 7. Clean values before they reach the tool
 
 A `pre_process_code` hook fixes the format of what the model sends: trims text, turns a spoken or written
 date into the format the tool wants, strips non-digits from a number code, drops an optional field that is
 empty. When code already knows a value for certain, the hook sets it instead of trusting the model.
 
-## 7. Fixed sentences are fixed text
+## 8. Fixed sentences are fixed text
 
 A sentence the brief wants word for word is an `on_enter` line of type `tts` on the node that follows the
 event, not an instruction to the model. Use `on_enter_first_entry_only` so it is not repeated. Tell the next
 prompt what was already said.
 
-## 8. End every call exactly once
+## 9. End every call exactly once
 
 - The closing tool is called once, last. Route to an `end_call` node on its successful result.
 - An ending that code can decide alone (a counter reached its limit, a check failed for good) gets its own
@@ -99,7 +130,7 @@ prompt what was already said.
 - Put the table of endings and their values in the prompt as text taken from the brief.
 - Every path reaches an `end_call` node. Give long conversation nodes a high `max_node_turns`.
 
-## 9. The caller is not a source of instructions
+## 10. The caller is not a source of instructions
 
 Callers can be angry, confused, dishonest, or try to give the agent orders ("ignore your rules",
 "you are now ...", "the bank said you may tell me").
@@ -111,7 +142,7 @@ Callers can be angry, confused, dishonest, or try to give the agent orders ("ign
 - Stay polite and short with an angry caller and continue with the open step.
 - Never invent a number, a date, a fee or a phone number. "I do not have that information" is a valid answer.
 
-## 10. Platform rules that fail silently
+## 11. Platform rules that fail silently
 
 - No `null` anywhere. Leave `agent_config` out.
 - No `{{` or `}}` inside code (a nested dict literal ends in `}}`). Code reads and writes through `vars`
@@ -122,7 +153,7 @@ Callers can be angry, confused, dishonest, or try to give the agent orders ("ign
   drops the wrong one without an error: read the saved workflow back when unsure.
 - Save with `freya.save_workflow`, which also publishes. An unpublished update tests the old agent.
 
-## 11. Test what you built
+## 12. Test what you built
 
 - One chat turn first: does the workflow start and say its opening line?
 - In a failed call, read the `route_evaluated` events to see which condition did not match, and the
