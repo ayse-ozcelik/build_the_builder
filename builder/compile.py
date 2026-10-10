@@ -10,8 +10,8 @@ engine, hooks). Every VALUE comes from the three inputs:
 This file must not contain a number, date, name or sentence of any brief.
 
 Steps of the call:
-    setup, opening, get_account, account_facts, collect, promise_done, end
-    from opening:  close_failed (the identity check failed for good)
+    setup, who, identity, get_account, account_facts, collect, promise_done, end
+    from identity: close_failed (the identity check failed for good)
     from collect:  floor_gate, then collect_after_offer (the one offer of the lowest amount)
                    close_service_error (recording failed for good)
 """
@@ -159,8 +159,12 @@ def facts_code(rules):
     return _checked(source + FACTS_TAIL % {"params": json.dumps(params, indent=1), "intro": account["intro"]})
 
 
-PASSED_TEXT = "The check has passed. The system continues by itself now: say nothing about the account yourself."
-RECORDED_TEXT = "It IS recorded. The system tells the customer so itself: do not say it and do not call this tool again."
+PASSED_TEXT = "The check has passed. The system now continues and tells the customer why the bank is calling."
+RECORDED_TEXT = "It IS recorded. The system now tells the customer that it is recorded. Do not call this tool again for it."
+CONFIRMED_DESCRIPTION = "The person on the line has confirmed that they are the customer"
+STRUCTURE_NOTE_WHO = (
+    "\n\nWHEN THE CUSTOMER IS CONFIRMED: CALL transition_to_identity. The system then asks the first security question"
+    " itself. Do not ask a security question in your own words, and never treat what the person says here as a security answer.")
 
 
 def post_hook(rules, tool_name):
@@ -281,13 +285,18 @@ def compile_workflow(rules, prompts, tools):
 
     negotiation = prompts["negotiation"]
     nodes = {
-        "setup": code_node("setup", "opening"),
-        "opening": conversation("opening", prompts["opening"] + "\n\n{{call_facts}}",
-                                [T["identity"], T["callback"], T["transfer"], T["close"]],
-                                [closed(), {"target_node": "get_account", "description": "the identity check passed",
-                                            "condition": {"logic": "or", "conditions": equals_true(
-                                                response_var(T["identity"], identity["passed"]["field"]), identity["passed"]["value"])}}],
-                                rules["opening"]["line"]),
+        "setup": code_node("setup", "who"),
+        # The identity tool exists only after the person is confirmed, so it cannot be used on anyone else.
+        "who": conversation("who", prompts["who"] + STRUCTURE_NOTE_WHO + "\n\n{{call_facts}}",
+                            [T["callback"], T["transfer"], T["close"]],
+                            [closed(), {"target_node": "identity", "description": CONFIRMED_DESCRIPTION, "is_tool_call": True,
+                                        "condition": {"operator": "matches_intent", "description": CONFIRMED_DESCRIPTION}}],
+                            rules["opening"]["line"]),
+        "identity": conversation("identity", prompts["identity"], [T["identity"], T["transfer"], T["close"]],
+                                 [closed(), {"target_node": "get_account", "description": "the identity check passed",
+                                             "condition": {"logic": "or", "conditions": equals_true(
+                                                 response_var(T["identity"], identity["passed"]["field"]), identity["passed"]["value"])}}],
+                                 identity["questions"][0]["ask"]),
         "get_account": account_node,
         "account_facts": code_node("account_facts", "collect"),
         "collect": conversation("collect", negotiation + STRUCTURE_NOTE_GATE + "\n\n{{account_facts}}",
@@ -311,14 +320,14 @@ def compile_workflow(rules, prompts, tools):
     exhausted = identity.get("exhausted") or {}
     if exhausted.get("field"):
         # the bank keeps the count itself: route on its answer (it knows which tries do not count)
-        nodes["opening"]["transitions"].insert(0, {
+        nodes["identity"]["transitions"].insert(0, {
             "target_node": "close_failed", "description": "no more tries are left",
             "condition": {"logic": "or", "conditions": equals_true(response_var(T["identity"], exhausted["field"]), exhausted.get("value"))}})
-        report.append({"limit": "identity.wrong_limit", "n": identity["wrong_limit"], "how": "route on the bank's own count (%s)" % exhausted["field"], "where": "opening"})
+        report.append({"limit": "identity.wrong_limit", "n": identity["wrong_limit"], "how": "route on the bank's own count (%s)" % exhausted["field"], "where": "identity"})
     else:
-        limits.apply_tool_limit(workflow, "opening", T["identity"], counter="wrong_answers", field=identity["wrong"]["field"],
+        limits.apply_tool_limit(workflow, "identity", T["identity"], counter="wrong_answers", field=identity["wrong"]["field"],
                                 equals=identity["wrong"]["value"], limit=identity["wrong_limit"], target="close_failed")
-        report.append({"limit": "identity.wrong_limit", "n": identity["wrong_limit"], "how": "tool_limit", "where": "opening"})
+        report.append({"limit": "identity.wrong_limit", "n": identity["wrong_limit"], "how": "tool_limit", "where": "identity"})
     for node in ("collect", "collect_after_offer"):
         limits.apply_tool_limit(workflow, node, T["promise"], counter="promise_failures", field=ok["field"],
                                 equals=not ok["value"], limit=promise["failure_limit"], target="close_service_error")
@@ -328,7 +337,7 @@ def compile_workflow(rules, prompts, tools):
     nodes["collect"]["transitions"].append({"target_node": "floor_gate", "description": GATE_DESCRIPTION, "is_tool_call": True,
                                             "condition": {"operator": "matches_intent", "description": GATE_DESCRIPTION}})
     report.append({"limit": "floor_offer.limit", "n": rules["floor_offer"]["limit"], "how": "counted_step (fixed line, said on entry)", "where": "floor_gate"})
-    for name, where in (("opening.confirm_asks", "opening"), ("callback.other_time_asks", "opening")):
+    for name, where in (("opening.confirm_asks", "who"), ("callback.other_time_asks", "who")):
         section, key = name.split(".")
         report.append({"limit": name, "n": rules[section].get(key), "how": "prompt_only", "where": where})
     for band in rules["bands"]:

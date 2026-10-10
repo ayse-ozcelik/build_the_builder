@@ -79,6 +79,8 @@ def main(argv=None):
     parser.add_argument("--tools", required=True, help="the tool API file (openapi.json)")
     parser.add_argument("--test-brief", default="", help="practice cases to test on after the build: A, B or 'all'")
     parser.add_argument("--reps", type=int, default=1)
+    parser.add_argument("--chat-turn", action="store_true", help="also send one chat turn after saving (can time out)")
+    parser.add_argument("--no-save", action="store_true", help="stop after compiling: nothing is sent to Freya")
     parser.add_argument("--rules", help="reuse a rules file instead of asking the model (for experiments)")
     args = parser.parse_args(argv)
 
@@ -130,19 +132,27 @@ def main(argv=None):
         for entry in report:
             trace.note("limit %(limit)s = %(n)s: %(how)s (%(where)s)" % entry)
         done("3 compile")
+        found = save_workflow.problems_in(workflow)
+        if found:
+            raise ValueError("the compiled workflow has problems:\n- " + "\n- ".join(found))
+        if args.no_save:
+            trace.note("--no-save: compiled only, nothing was sent to Freya")
+            status = "ok"
+            return
 
         ids = save_workflow.save(workflow)
         trace.workflow_created(ids["workflow_id"], agent_id=ids["agent_id"], workflow=workflow)
         sys.path.insert(0, KIT)
         import freya
-        try:
-            reply = chat_turn(freya, ids["workflow_id"], rules)
-            trace.self_test("one chat turn: the workflow starts and answers", bool(reply.strip()), reply[:200])
-        except RuntimeError as error:
-            # The chat route can time out (504) on a healthy workflow; a practice run is the real check.
-            trace.self_test("one chat turn: the workflow starts and answers", False, "no answer: " + str(error)[:160])
-            print("chat turn gave no answer: %s" % str(error)[:160], flush=True)
-        done("4 save and chat turn")
+        if args.chat_turn:
+            try:
+                reply = chat_turn(freya, ids["workflow_id"], rules)
+                trace.self_test("one chat turn: the workflow starts and answers", bool(reply.strip()), reply[:200])
+            except RuntimeError as error:
+                # The chat route timed out (504) on a workflow that then passed its practice run, so it proves little.
+                trace.self_test("one chat turn: the workflow starts and answers", False, "no answer: " + str(error)[:160])
+                print("chat turn gave no answer: %s" % str(error)[:160], flush=True)
+        done("4 save")
         build_seconds = time.time() - started
         trace.note("build time without practice customers: %.0f s" % build_seconds)
 

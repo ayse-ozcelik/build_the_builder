@@ -192,6 +192,7 @@ def _run(vars, params_json):
     words = ('WEEKDAY WORDS (week = Monday to Sunday): tomorrow = ' + both(today + one) + '. ' + '. '.join(ww)
              + '. A weekday name with a day number means that calendar date. A weekday name alone means the first such day after today.')
 
+    vars['product_count'] = len(prods)
     if not prods:
         vars['account_state'] = 'missing'
         vars['product_ids'] = ''
@@ -205,7 +206,10 @@ def _run(vars, params_json):
     proposals = sorted(P.get('proposals') or [], key=lambda x: int(x.get('attempt') or 0))
     A = ['ACCOUNT FACTS (computed by the bank system. Use them exactly as written, never recompute dates yourself):',
          '- Today: ' + both(today) + (', a business day.' if isbd(today) else ', NOT a business day: nothing can be recorded for today, offer ' + both(nbd(today)) + ' instead.')]
-    S, ids, maxdl, first = [], [], today, None
+    S, ids, maxdl, first, offers = [], [], today, None, []
+    if len(prods) > 1:
+        A.append('- PRODUCTS: ' + str(len(prods)) + ', always handled in this order: '
+                 + ', '.join(str(p.get(idf)) for p in prods) + '. Each product has its own amounts, deadline and attempts.')
     for p in prods:
         kind = str(p.get(P.get('type_field') or 'type') or '')
         name = fill(pick(P.get('names'), kind, 'say') or kind.replace('_', ' '), p)
@@ -257,8 +261,15 @@ def _run(vars, params_json):
         values = dict(p)
         values.update(name=name, amount=fm(full), floor=fm(floor), lateness=latetext)
         S.append(fill(P.get('product_sentence'), values))
+        offers.append('  - ' + name + ': "' + fill(P.get('floor_offer_line'), values) + '"')
         if first is None:
             first = values
+    A.append('')
+    if len(prods) == 1:
+        A.append('FLOOR OFFER: never say it yourself. To make it, CALL transition_to_floor_gate; the system then says it.')
+    else:
+        A.append('FLOOR OFFER (at most ' + str(P.get('floor_offer_limit') or 1) + ' time(s) per product; say exactly this sentence and do not call transition_to_floor_gate):')
+        A.extend(offers)
     A.append('')
     A.append('DATE CALENDAR (date: can it be recorded?):')
     d = today

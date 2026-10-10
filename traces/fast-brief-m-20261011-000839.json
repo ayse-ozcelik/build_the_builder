@@ -1,0 +1,105 @@
+{
+  "started_at": "2026-10-10T21:08:39+00:00",
+  "ended_at": "2026-10-10T21:10:49+00:00",
+  "duration_seconds": 130.1,
+  "status": "ok",
+  "brief": "build/mutated/brief-m.md",
+  "tool_api": "kit/tools/openapi.json",
+  "model_calls": [
+    {
+      "at": "2026-10-10T21:08:39+00:00",
+      "model": "claude-opus-5-5",
+      "purpose": "fill the fixed rules form from the brief files"
+    },
+    {
+      "at": "2026-10-10T21:10:18+00:00",
+      "model": "claude-opus-5-5",
+      "purpose": "write the system text from the rules of that step"
+    },
+    {
+      "at": "2026-10-10T21:10:18+00:00",
+      "model": "claude-opus-5-5",
+      "purpose": "write the who text from the rules of that step"
+    },
+    {
+      "at": "2026-10-10T21:10:18+00:00",
+      "model": "claude-opus-5-5",
+      "purpose": "write the identity text from the rules of that step"
+    },
+    {
+      "at": "2026-10-10T21:10:18+00:00",
+      "model": "claude-opus-5-5",
+      "purpose": "write the negotiation text from the rules of that step"
+    },
+    {
+      "at": "2026-10-10T21:10:18+00:00",
+      "model": "claude-opus-5-5",
+      "purpose": "write the after_promise text from the rules of that step"
+    }
+  ],
+  "workflows": [],
+  "self_tests": [],
+  "notes": [
+    {
+      "at": "2026-10-10T21:10:18+00:00",
+      "message": "rules form: 99 s, $0.37, 0 problem(s)"
+    },
+    {
+      "at": "2026-10-10T21:10:18+00:00",
+      "message": "rules: 49 rules (25 fit no slot and go to the prompts only), 19 endings, 2 bands"
+    },
+    {
+      "at": "2026-10-10T21:10:18+00:00",
+      "message": "1 rules form took 99 s"
+    },
+    {
+      "at": "2026-10-10T21:10:49+00:00",
+      "message": "prompts: 31 s, $0.44, 0 still to fix"
+    },
+    {
+      "at": "2026-10-10T21:10:49+00:00",
+      "message": "2 step texts took 31 s"
+    },
+    {
+      "at": "2026-10-10T21:10:49+00:00",
+      "message": "limit identity.wrong_limit = 3: route on the bank's own count (wrong_answers_left) (identity)"
+    },
+    {
+      "at": "2026-10-10T21:10:49+00:00",
+      "message": "limit promise.failure_limit = 2: tool_limit (collect, collect_after_offer)"
+    },
+    {
+      "at": "2026-10-10T21:10:49+00:00",
+      "message": "limit floor_offer.limit = 1: counted_step (fixed line, said on entry) (floor_gate)"
+    },
+    {
+      "at": "2026-10-10T21:10:49+00:00",
+      "message": "limit opening.confirm_asks = 2: prompt_only (who)"
+    },
+    {
+      "at": "2026-10-10T21:10:49+00:00",
+      "message": "limit callback.other_time_asks = 1: prompt_only (who)"
+    },
+    {
+      "at": "2026-10-10T21:10:49+00:00",
+      "message": "limit attempts (band early) = 1: prompt_only, with the allowed number and each proposal computed in code (collect)"
+    },
+    {
+      "at": "2026-10-10T21:10:49+00:00",
+      "message": "limit attempts (band late) = 2: prompt_only, with the allowed number and each proposal computed in code (collect)"
+    },
+    {
+      "at": "2026-10-10T21:10:49+00:00",
+      "message": "3 compile took 0 s"
+    },
+    {
+      "at": "2026-10-10T21:10:49+00:00",
+      "message": "--no-save: compiled only, nothing was sent to Freya"
+    }
+  ],
+  "summary": {
+    "model_call_count": 6,
+    "self_tests_passed": 0,
+    "self_tests_total": 0
+  }
+}

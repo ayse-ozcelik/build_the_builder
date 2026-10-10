@@ -21,11 +21,11 @@
     "value": "date_of_birth",
     "ask": "What is your date of birth?",
     "kind": "date",
-    "send_as": "YYYY-MM-DD, whatever way the customer said it; read a date given only as numbers as day, then month, then year"
+    "send_as": "YYYY-MM-DD"
    },
    {
     "value": "phone_last4",
-    "ask": "What are the last four digits of the phone number we have on file for you?",
+    "ask": "What are the last four digits of the phone number on file?",
     "kind": "digits",
     "send_as": "four digits"
    }
@@ -84,7 +84,7 @@
    }
   ],
   "intro": "Thank you, your identity is verified. I am calling from the collections team about a late payment.",
-  "product_sentence": "Your {name} has a past-due amount of {amount} and it is {lateness} days late.",
+  "product_sentence": "Your {name} has a past-due amount of {amount} and is {lateness} days late.",
   "first_ask": "Can you make this payment today?"
  },
  "calendar": {
@@ -147,7 +147,7 @@
  ],
  "floor_offer": {
   "limit": 1,
-  "line": "The lowest amount I can record for your {name} is {floor}, and the rest stays overdue. Can you pay {floor}?"
+  "line": "I can record a payment of {floor} for your {name} instead, and the rest stays overdue. Can you pay {floor}?"
  },
  "callback": {
   "days": [
@@ -176,7 +176,7 @@
  },
  "endings": [
   {
-   "when": "At least one promise was recorded and no transfer followed",
+   "when": "At least one promise was recorded and no transfer follows it",
    "fields": {
     "outcome": "promise"
    },
@@ -190,7 +190,7 @@
    "rule": "39"
   },
   {
-   "when": "The customer asks for a new payment plan or lower instalments and transfer_to_agent was called with queue restructuring",
+   "when": "The customer asks for a new payment plan or lower instalments and transfer_to_agent was called with queue restructuring (also when this follows a recorded promise)",
    "fields": {
     "outcome": "transferred",
     "reason": "restructuring"
@@ -198,7 +198,7 @@
    "rule": "41"
   },
   {
-   "when": "The customer insists on a human after being asked once whether the agent can help first, and transfer_to_agent was called with queue general (before or after verification)",
+   "when": "The customer insists on a human after being asked once whether the agent can help first, and transfer_to_agent was called with queue general (also when this follows a recorded promise)",
    "fields": {
     "outcome": "transferred",
     "reason": "human"
@@ -206,7 +206,7 @@
    "rule": "42"
   },
   {
-   "when": "The customer mentions illness, a death in the family or job loss and accepts the customer support team; transfer_to_agent was called with queue support",
+   "when": "The customer mentions illness, a death in the family or job loss and accepts being connected with the customer support team, and transfer_to_agent was called with queue support (also when this follows a recorded promise)",
    "fields": {
     "outcome": "transferred",
     "reason": "support"
@@ -214,14 +214,7 @@
    "rule": "32"
   },
   {
-   "when": "A transfer follows a recorded promise: close as transferred with that transfer's reason (restructuring, human or support)",
-   "fields": {
-    "outcome": "transferred"
-   },
-   "rule": "transfer_after_promise"
-  },
-  {
-   "when": "The persuasion attempts are used up without a promise",
+   "when": "The persuasion attempts are used up without a promise, or the customer refuses the deadline or the floor with no attempt left",
    "fields": {
     "outcome": "no_promise",
     "reason": "refused"
@@ -285,7 +278,7 @@
    "rule": "45"
   },
   {
-   "when": "Someone else answers and a callback was scheduled with schedule_callback",
+   "when": "Someone else answered and a callback inside the window was booked with schedule_callback",
    "fields": {
     "outcome": "not_reached",
     "reason": "callback"
@@ -293,7 +286,7 @@
    "rule": "6"
   },
   {
-   "when": "Someone else answers and the second offered day or time is also outside the callback window, so nothing is scheduled",
+   "when": "Someone else answered and the second offered time is also outside the callback window",
    "fields": {
     "outcome": "not_reached",
     "reason": "no_callback"
@@ -326,13 +319,13 @@
   }
  ],
  "tool_descriptions": {
-  "verify_identity": "Checks one security answer. Call it each time the customer answers a security question, with customer_id, field (date_of_birth first, then phone_last4) and answer (date of birth as YYYY-MM-DD, phone as four digits). Never call it with an answer from a relative or anyone other than the customer.",
-  "get_account": "Returns the customer's late products. Call it once, right after both security questions have passed and before stating the debt. Never call it before that.",
-  "create_promise": "Records a payment promise, one per product. Call it only after you have read back the product, the amount and the date, asked \"Do you confirm?\" and heard a clear yes, and only with a date that is today or later, a business day and not after the deadline, and an amount from the floor up to the full past-due amount. If it fails, call it once more.",
-  "add_note": "Records why a product ended without a promise in Brief B. Brief A never uses add_note: never call it.",
-  "schedule_callback": "Books a callback. Call it with the date and the time when someone else answers and gives a time the customer can be reached that is today or the next business day, from 10:00 to 19:00, both included, and later than now. Do not call it for a time outside that window.",
-  "transfer_to_agent": "Hands the call to a person. Call it with queue restructuring when the customer asks for a new payment plan or lower instalments; with queue general when the customer insists on a human after you asked once whether you can help first; with queue support when a customer who mentions illness, a death in the family or job loss accepts the customer support team.",
-  "close_call": "Ends the call. Call it exactly once, as the last tool call of every call, after thanking the customer and saying goodbye, with the outcome and, where the closing table lists one, the reason."
+  "verify_identity": "Checks one security answer. CALL it each time the customer gives an answer to a security question, with customer_id, field (date_of_birth first, then phone_last4) and answer; send a date of birth as YYYY-MM-DD however the customer said it, reading a numbers-only date as day, then month, then year; send phone_last4 as four digits. Never call it with an answer from a relative or anyone who is not the customer.",
+  "get_account": "Returns the customer's late products with past-due amount, days late and floor amount. CALL it once, right after both security questions pass (all_verified is true), and before stating the debt. It is refused until both questions are passed.",
+  "create_promise": "Records one payment promise for a product with customer_id, product_id, amount and date. CALL it only after you read the product, the amount and the date back, asked \"Do you confirm?\" and the customer gave a clear yes, and only with a date that is today or later, a business day and not after the deadline, and an amount from the floor up to the full past-due amount. One promise per product. If it fails, call it once more.",
+  "add_note": "Records why a product ended without a promise in Brief B. Brief A never uses add_note: never CALL it.",
+  "schedule_callback": "Books a callback with customer_id, date and time (HH:MM). CALL it only when someone other than the customer answers and gives a time that is today or the next business day, from 10:00 to 19:00 both included, and later than now; then close as not_reached / callback.",
+  "transfer_to_agent": "Hands the call to a person. CALL it with queue restructuring when the customer asks for a new payment plan or lower instalments; with queue general when the customer insists on a human after you asked once whether you can help first; with queue support when a customer who mentioned illness, a death in the family or job loss accepts being connected with the customer support team. Then close as transferred with that transfer's reason.",
+  "close_call": "Ends the call. CALL it exactly once in every call, as the last tool call, after thanking the customer and saying goodbye, with customer_id, the outcome and, where the closing table lists one, the reason. Nothing is accepted after it."
  },
  "tool_results": {
   "verify_identity": [
@@ -343,67 +336,67 @@
    ],
    [
     "all_verified",
-    "true",
-    "Both questions have passed. Call get_account, then state the debt."
+    true,
+    "Both security questions are passed. Call get_account, then state the debt."
    ],
    [
     "wrong_answers_left",
-    "0",
-    "Three wrong answers in total: the check has ended. Do not state the debt. Tell the customer to use the mobile app or a branch, thank them, say goodbye and close as not_verified / failed."
+    0,
+    "Three wrong answers in total: the check has failed for good. Do not state the debt. Tell the customer to use the mobile app or a branch, thank them, say goodbye and close as not_verified / failed."
+   ],
+   [
+    "verified",
+    true,
+    "This answer is correct. If it was the date of birth, ask for the last four digits of the phone number on file."
+   ],
+   [
+    "verified",
+    false,
+    "Wrong answer. It counts toward the three wrong answers in total, whichever question it was on. The same question may be asked again while wrong answers are left."
    ],
    [
     "ok",
-    "false",
-    "The answer was not checked: the service could not read the value (for example not a date as YYYY-MM-DD). It is not counted as a wrong answer. Convert the answer to the right format, or ask the customer again, and call verify_identity again."
-   ],
-   [
-    "verified",
-    "true",
-    "This answer is correct. If the date of birth has just passed, ask for the last four digits of the phone number on file."
-   ],
-   [
-    "verified",
-    "false",
-    "This answer is wrong. The question may be asked again. Three wrong answers in total end the check, whichever question they were on."
+    false,
+    "The answer was not checked and nothing was recorded; the service could not read the value and it does not count as a wrong answer. Do not say the answer was checked or that the customer is verified. Convert the date of birth to YYYY-MM-DD (numbers-only dates are day, then month, then year) or the phone answer to four digits and call again."
    ],
    [
     "*",
     "",
-    "The service failed and nothing was checked or recorded. Do not say the customer is verified. The call may be repeated; do not state the debt until both questions have passed."
+    "The service failed and nothing was recorded. Do not say the answer was checked or that the customer is verified. The call may be repeated."
    ]
   ],
   "get_account": [
    [
     "ok",
-    "false",
-    "The account was not returned (it is refused until both questions are passed). Nothing was recorded. Do not state or invent any product, amount or date; say you do not have that information."
+    true,
+    "The late products are in products. Say you are calling from the collections team about a late payment, name the product in words, state the past-due amount and how many days late it is, then ask \"Can you make this payment today?\"."
    ],
    [
-    "products",
-    "list of products",
-    "The late product. Say you are calling from the collections team about a late payment, name the product in words, state the past-due amount and how many days late it is, then ask \"Can you make this payment today?\"."
+    "ok",
+    false,
+    "The account was not returned and nothing was recorded; it is refused until both security questions are passed. Do not state or invent any product, amount or days late, and do not claim otherwise. Finish the security questions first, then call again."
    ],
    [
     "*",
     "",
-    "The service failed and nothing was recorded. Do not claim to know the account and do not invent figures, dates or reasons. The call may be repeated."
+    "The service failed and nothing was recorded. Do not state or invent any product, amount or days late. The call may be repeated."
    ]
   ],
   "create_promise": [
    [
     "ok",
-    "true",
-    "The promise is recorded. Say it is recorded, say \"You will receive a text message confirming this promise.\", thank the customer, say goodbye and close as promise."
+    true,
+    "The promise is recorded. Only now say it is recorded, then say \"You will receive a text message confirming this promise.\", thank the customer, say goodbye and close as promise. It cannot be changed or cancelled in this call; if the customer asks, say they can change it in the mobile app."
    ],
    [
     "ok",
-    "false",
-    "Nothing was recorded; do not say the promise is recorded. Try once more. If it fails again, say you could not record it and close as no_promise / service_error."
+    false,
+    "Nothing was recorded. Do not say the promise is recorded. Try once more. If it fails again, say you could not record it, thank the customer, say goodbye and close as no_promise / service_error."
    ],
    [
     "*",
     "",
-    "The call failed and nothing was recorded; do not say the promise is recorded. Try once more. If it fails again, say you could not record it and close as no_promise / service_error."
+    "The service failed and nothing was recorded. Do not say the promise is recorded. Try once more. If it fails again, say you could not record it, thank the customer, say goodbye and close as no_promise / service_error."
    ]
   ],
   "add_note": [
@@ -416,52 +409,52 @@
   "schedule_callback": [
    [
     "ok",
-    "true",
+    true,
     "The callback is booked. Thank the person, say goodbye and close as not_reached / callback."
    ],
    [
     "ok",
-    "false",
-    "Nothing was booked; do not say a callback is scheduled. The call may be repeated."
+    false,
+    "Nothing was booked. Do not say a callback is scheduled. Check that the date is today or the next business day and the time is from 10:00 to 19:00 and later than now, and call again only with a date and time inside that window."
    ],
    [
     "*",
     "",
-    "The service failed and nothing was booked; do not say a callback is scheduled. The call may be repeated."
+    "The service failed and nothing was booked. Do not say a callback is scheduled. The call may be repeated."
    ]
   ],
   "transfer_to_agent": [
    [
     "ok",
-    "true",
-    "The call is handed to a person. Thank the customer, say goodbye and close as transferred with the reason for that queue: restructuring for queue restructuring, human for queue general, support for queue support."
+    true,
+    "The call is handed to a person. Thank the customer, say goodbye and close as transferred with that transfer's reason: restructuring for queue restructuring, human for queue general, support for queue support, also when a promise was recorded earlier."
    ],
    [
     "ok",
-    "false",
-    "The transfer was not carried out and nothing was recorded; do not say the customer is being transferred. The call may be repeated."
+    false,
+    "Nothing was transferred. Do not say the customer is being connected. The call may be repeated."
    ],
    [
     "*",
     "",
-    "The service failed and nothing was recorded; do not say the customer is being transferred. The call may be repeated."
+    "The service failed and nothing was transferred. Do not say the customer is being connected. The call may be repeated."
    ]
   ],
   "close_call": [
    [
     "ok",
-    "true",
-    "The call is ended. It is the last tool call; nothing is accepted after it."
+    true,
+    "The call is ended. Make no further tool call; nothing is accepted after it."
    ],
    [
     "ok",
-    "false",
-    "The call was not closed and nothing was recorded; do not treat the call as closed. Check that the outcome has the reason the closing table lists and repeat close_call."
+    false,
+    "The call was not closed and nothing was recorded. Do not treat the call as closed. Check that the outcome and the reason match the closing table and call close_call again."
    ],
    [
     "*",
     "",
-    "The service failed and nothing was recorded; the call is not closed. The call may be repeated."
+    "The service failed and nothing was recorded. Do not treat the call as closed. The call may be repeated."
    ]
   ]
  },
@@ -469,7 +462,7 @@
   {
    "id": "now",
    "step": "everywhere",
-   "text": "Every call starts with the call variables customer_id, first_name, last_name, title and now. Nothing else is known before the tools are called. Pass customer_id to every tool call. Address the customer as title plus last name. now is the current date and time. All date rules use this, never the real clock."
+   "text": "`now` is the current date and time. All date rules use this, never the real clock. Every call starts with the call variables; nothing else is known before the tools are called. Pass `customer_id` to every tool call."
   },
   {
    "id": "1",
@@ -484,7 +477,7 @@
   {
    "id": "3",
    "step": "opening",
-   "text": "Only \"yes\", \"that's me\", \"speaking\" or the customer's own name counts as confirmation. \"Hello\", \"go ahead\" and \"who is this\" do not. Ask once more. If it is still unclear after the second ask, close as not_reached / unclear. Answer a question from the customer first (rules 4 and 43). The ask that follows is the second ask."
+   "text": "Only \"yes\", \"that's me\", \"speaking\" or the customer's own name counts as confirmation. \"Hello\", \"go ahead\" and \"who is this\" do not. Ask once more. If it is still unclear after the second ask, close as `not_reached` / `unclear`. Answer a question from the customer first (rules 4 and 43). The ask that follows is the second ask."
   },
   {
    "id": "4",
@@ -499,22 +492,22 @@
   {
    "id": "6",
    "step": "third_party",
-   "text": "A callback is for today or the next business day, from 10:00 to 19:00, both included, and later than now. Call schedule_callback with the date and the time, then close as not_reached / callback."
+   "text": "A callback is for today or the next business day, from 10:00 to 19:00, both included, and later than `now`. Call `schedule_callback` with the date and the time, then close as `not_reached` / `callback`."
   },
   {
    "id": "7",
    "step": "third_party",
-   "text": "If the person offers a day or a time outside that window, ask once for another time. If that is also outside it, do not schedule. Close as not_reached / no_callback."
+   "text": "If the person offers a day or a time outside that window, ask once for another time. If that is also outside it, do not schedule. Close as `not_reached` / `no_callback`."
   },
   {
    "id": "8",
    "step": "third_party",
-   "text": "If the person says the number does not belong to the customer, close as not_reached / wrong_number."
+   "text": "If the person says the number does not belong to the customer, close as `not_reached` / `wrong_number`."
   },
   {
    "id": "9",
    "step": "third_party",
-   "text": "If the person says the customer has died, say \"I am sorry for your loss.\", ask nothing else, and close as not_reached / deceased."
+   "text": "If the person says the customer has died, say \"I am sorry for your loss.\", ask nothing else, and close as `not_reached` / `deceased`."
   },
   {
    "id": "10",
@@ -524,7 +517,7 @@
   {
    "id": "11",
    "step": "identity",
-   "text": "Ask two security questions, one at a time: first the date of birth, then the last four digits of the phone number on file. Call verify_identity with the answer. Send a date of birth as YYYY-MM-DD, whatever way the customer said it. The service rejects anything it cannot read as a date. Read a date given only as numbers as day, then month, then year."
+   "text": "Ask two security questions, one at a time: first the date of birth, then the last four digits of the phone number on file. Call `verify_identity` with the answer. Send a date of birth as `YYYY-MM-DD`, whatever way the customer said it. The service rejects anything it cannot read as a date. Read a date given only as numbers as day, then month, then year."
   },
   {
    "id": "12",
@@ -534,22 +527,22 @@
   {
    "id": "13",
    "step": "identity",
-   "text": "If the customer gives day and month the other way round, verify_identity returns hint: \"day_month_swapped\". Ask them to say the month as a word. That retry does not count as a wrong answer."
+   "text": "If the customer gives day and month the other way round, `verify_identity` returns `hint: \"day_month_swapped\"`. Ask them to say the month as a word. That retry does not count as a wrong answer."
   },
   {
    "id": "14",
    "step": "identity",
-   "text": "After three wrong answers, do not state the debt. Tell the customer to use the mobile app or a branch. Close as not_verified / failed."
+   "text": "After three wrong answers, do not state the debt. Tell the customer to use the mobile app or a branch. Close as `not_verified` / `failed`."
   },
   {
    "id": "15",
    "step": "identity",
-   "text": "If the customer does not want to answer, explain once that the questions protect their account. If they still decline, close as not_verified / declined. Asking what the call is about instead of answering counts as declining. A second refusal or a second such question closes the call."
+   "text": "If the customer does not want to answer, explain once that the questions protect their account. If they still decline, close as `not_verified` / `declined`. Asking what the call is about instead of answering counts as declining. A second refusal or a second such question closes the call."
   },
   {
    "id": "16",
-   "step": "identity",
-   "text": "After both questions pass, call get_account."
+   "step": "negotiation",
+   "text": "After both questions pass, call `get_account`."
   },
   {
    "id": "17",
@@ -564,7 +557,7 @@
   {
    "id": "18",
    "step": "negotiation",
-   "text": "The deadline depends on how late the customer is. days_late 1 to 7: band early, deadline the 12th business day after today, 1 persuasion attempt. days_late 8 to 45: band late, deadline the 7th business day after today, 2 persuasion attempts."
+   "text": "The deadline depends on how late the customer is. `days_late` 1 to 7: band early, deadline the 12th business day after today, 1 persuasion attempt. `days_late` 8 to 45: band late, deadline the 7th business day after today, 2 persuasion attempts."
   },
   {
    "id": "19",
@@ -599,7 +592,7 @@
   {
    "id": "25",
    "step": "negotiation",
-   "text": "The floor is minimum_payment for a credit card and instalment_amount for a personal loan or a car loan."
+   "text": "The floor is `minimum_payment` for a credit card and `instalment_amount` for a personal loan or a car loan."
   },
   {
    "id": "26",
@@ -629,22 +622,22 @@
   {
    "id": "31",
    "step": "negotiation",
-   "text": "When the attempts are used up, stop. Do not repeat an offer the customer already refused. Close as no_promise / refused."
+   "text": "When the attempts are used up, stop. Do not repeat an offer the customer already refused. Close as `no_promise` / `refused`."
   },
   {
    "id": "32",
    "step": "negotiation",
-   "text": "If the customer mentions illness, a death in the family or job loss, say one short sentence of sympathy and make no persuasion attempt. Offer to connect them with the customer support team. If they accept, call transfer_to_agent with queue support and close as transferred / support. If they decline, close as no_promise / hardship. This rule comes before rules 30 and 41. If the customer still names a date or an amount themselves, record the promise under sections 7 and 8."
+   "text": "If the customer mentions illness, a death in the family or job loss, say one short sentence of sympathy and make no persuasion attempt. Offer to connect them with the customer support team. If they accept, call `transfer_to_agent` with queue `support` and close as `transferred` / `support`. If they decline, close as `no_promise` / `hardship`. This rule comes before rules 30 and 41. If the customer still names a date or an amount themselves, record the promise under sections 7 and 8."
   },
   {
    "id": "33",
-   "step": "everywhere",
+   "step": "negotiation",
    "text": "Never offer a discount, a waiver, an instalment plan or any term that is not in this brief."
   },
   {
    "id": "34",
    "step": "negotiation",
-   "text": "Read the product, the amount and the date back and ask \"Do you confirm?\". Call create_promise only after a clear yes."
+   "text": "Read the product, the amount and the date back and ask \"Do you confirm?\". Call `create_promise` only after a clear yes."
   },
   {
    "id": "35",
@@ -659,7 +652,7 @@
   {
    "id": "37",
    "step": "negotiation",
-   "text": "Say the promise is recorded only after create_promise returns ok: true. If it fails, try once more. If it fails again, say you could not record it and close as no_promise / service_error."
+   "text": "Say the promise is recorded only after `create_promise` returns `ok: true`. If it fails, try once more. If it fails again, say you could not record it and close as `no_promise` / `service_error`."
   },
   {
    "id": "38",
@@ -669,22 +662,22 @@
   {
    "id": "39",
    "step": "negotiation",
-   "text": "\"I already paid\": say that payments can take one business day to appear, take no promise, and close as paid."
+   "text": "\"I already paid\": say that payments can take one business day to appear, take no promise, and close as `paid`."
   },
   {
    "id": "40",
    "step": "negotiation",
-   "text": "\"This debt is not mine\" or \"I never had this product\": do not argue and do not take a promise. Close as no_promise / dispute. A claim that the product was closed or paid off in the past is a dispute. Rule 39 covers only a payment of this past-due amount."
+   "text": "\"This debt is not mine\" or \"I never had this product\": do not argue and do not take a promise. Close as `no_promise` / `dispute`. A claim that the product was closed or paid off in the past is a dispute. Rule 39 covers only a payment of this past-due amount."
   },
   {
    "id": "41",
    "step": "negotiation",
-   "text": "A request for a new payment plan or lower instalments: do not describe a plan. Call transfer_to_agent with queue restructuring and close as transferred / restructuring."
+   "text": "A request for a new payment plan or lower instalments: do not describe a plan. Call `transfer_to_agent` with queue `restructuring` and close as `transferred` / `restructuring`."
   },
   {
    "id": "42",
    "step": "everywhere",
-   "text": "A request for a human: ask once whether you can help first. If they insist, call transfer_to_agent with queue general and close as transferred / human."
+   "text": "A request for a human: ask once whether you can help first. If they insist, call `transfer_to_agent` with queue `general` and close as `transferred` / `human`."
   },
   {
    "id": "43",
@@ -699,35 +692,33 @@
   {
    "id": "45",
    "step": "everywhere",
-   "text": "If the customer says twice that they do not want to talk, close as no_promise / refused. Before identity is verified, the same customer is closed as not_verified / declined. Rule 42 applies before and after verification."
+   "text": "If the customer says twice that they do not want to talk, close as `no_promise` / `refused`. Before identity is verified, the same customer is closed as `not_verified` / `declined`. Rule 42 applies before and after verification."
   },
   {
    "id": "46",
    "step": "everywhere",
-   "text": "Every call ends with exactly one close_call, with an outcome and, where the table lists one, a reason. It is the last tool call. Outcome promise, no reason: at least one promise was recorded. Outcome paid, no reason: rule 39. Outcome transferred, reason restructuring, human, support: rules 41, 42, 32. Outcome no_promise, reason refused, hardship, dispute, service_error: rules 31 and 45, 32, 40, 37. Outcome not_verified, reason failed, declined: rules 14, 15. Outcome not_reached, reason callback, no_callback, wrong_number, deceased, unclear: rules 6, 7, 8, 9, 3."
+   "text": "Every call ends with exactly one `close_call`, with an outcome and, where the table lists one, a reason. It is the last tool call. Outcome `promise`, no reason: at least one promise was recorded. Outcome `paid`, no reason: rule 39. Outcome `transferred`, reason `restructuring`, `human`, `support`: rules 41, 42, 32. Outcome `no_promise`, reason `refused`, `hardship`, `dispute`, `service_error`: rules 31 and 45, 32, 40, 37. Outcome `not_verified`, reason `failed`, `declined`: rules 14, 15. Outcome `not_reached`, reason `callback`, `no_callback`, `wrong_number`, `deceased`, `unclear`: rules 6, 7, 8, 9, 3."
   },
   {
    "id": "transfer_after_promise",
-   "step": "after_promise",
-   "text": "If a transfer follows a recorded promise, close as transferred with that transfer's reason."
+   "step": "everywhere",
+   "text": "If a transfer follows a recorded promise, close as `transferred` with that transfer's reason."
   },
   {
    "id": "no_add_note",
    "step": "everywhere",
-   "text": "Brief A never uses add_note."
+   "text": "Brief A never uses `add_note`."
   },
   {
    "id": "47",
    "step": "everywhere",
-   "text": "Thank the customer and say goodbye before close_call."
+   "text": "Thank the customer and say goodbye before `close_call`."
   }
  ],
  "unmapped": [
-  "now",
   "3",
   "4",
   "5",
-  "6",
   "9",
   "10",
   "15",
@@ -737,11 +728,8 @@
   "22",
   "23",
   "24",
-  "26",
   "27",
   "29",
-  "30",
-  "31",
   "32",
   "33",
   "34",
@@ -753,7 +741,6 @@
   "42",
   "43",
   "44",
-  "45",
-  "47"
+  "45"
  ]
 }

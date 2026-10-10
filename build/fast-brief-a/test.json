@@ -1,81 +1,81 @@
 {
  "agent_id": "dadb25c6-fec0-41b0-8874-b1644dda388a",
- "simulation_id": "749ac844-098e-455d-90b2-8e278436bedf",
- "iteration_id": "141f9443-69a4-4d7e-b8de-10c5ecd9c7b9",
- "seconds": 210,
- "passed": 9,
+ "simulation_id": "5b04b065-29c7-45d3-8e27-044727c1b75f",
+ "iteration_id": "45f5d247-91d1-4c5c-a897-9d5f46853873",
+ "seconds": 704,
+ "passed": 6,
  "total": 10,
- "runs": 1,
+ "runs": 3,
  "final": [
   {
    "id": "PUB-01",
    "family": "Happy path",
-   "passes": 1,
-   "runs": 1,
+   "passes": 3,
+   "runs": 3,
    "pass": true
   },
   {
    "id": "PUB-02",
    "family": "Third party",
    "passes": 1,
-   "runs": 1,
-   "pass": true
+   "runs": 3,
+   "pass": false
   },
   {
    "id": "PUB-03",
    "family": "Identity",
    "passes": 1,
-   "runs": 1,
-   "pass": true
+   "runs": 3,
+   "pass": false
   },
   {
    "id": "PUB-04",
    "family": "Dates",
-   "passes": 1,
-   "runs": 1,
+   "passes": 3,
+   "runs": 3,
    "pass": true
   },
   {
    "id": "PUB-05",
    "family": "Hardship",
-   "passes": 1,
-   "runs": 1,
+   "passes": 3,
+   "runs": 3,
    "pass": true
   },
   {
    "id": "PUB-06",
    "family": "Amounts",
-   "passes": 1,
-   "runs": 1,
+   "passes": 3,
+   "runs": 3,
    "pass": true
   },
   {
    "id": "PUB-07",
    "family": "Dates",
    "passes": 1,
-   "runs": 1,
-   "pass": true
+   "runs": 3,
+   "pass": false
   },
   {
    "id": "PUB-08",
    "family": "Already paid",
-   "passes": 1,
-   "runs": 1,
+   "passes": 3,
+   "runs": 3,
    "pass": true
   },
   {
    "id": "PUB-09",
    "family": "Restructuring",
    "passes": 1,
-   "runs": 1,
-   "pass": true
+   "runs": 3,
+   "pass": false
   },
   {
    "id": "PUB-10",
    "family": "Tool failure",
-   "passes": 0,
-   "runs": 1,
-   "pass": false
+   "passes": 3,
+   "runs": 3,
+   "pass": true
   }
  ],
  "rows": [
@@ -85,50 +85,56 @@
    "family": "Happy path",
    "pass": true,
    "failed": [],
-   "call_id": "bc2922bc-6675-40a4-8e38-3070230a3e6e",
+   "call_id": "9096b98d-c0eb-47fa-87e2-e5e5cac0cb6b",
    "tools": [
-    "verify_identity",
     "verify_identity",
     "verify_identity",
     "get_account",
     "create_promise",
     "close_call"
    ],
-   "customer_id": "c_6394c049-87f",
-   "slowest_turn_s": 4.6,
+   "customer_id": "c_e88d7b0b-059",
+   "slowest_turn_s": 3.4,
    "ended": "assistant-ended-call"
   },
   {
    "id": "PUB-02",
    "level": "medium",
    "family": "Third party",
-   "pass": true,
-   "failed": [],
-   "call_id": "522e9e24-e3f8-4dce-a778-8a7f6f113e38",
-   "tools": [
-    "schedule_callback",
-    "close_call"
+   "pass": false,
+   "failed": [
+    "callbacks [], expected [{'date': '2026-10-15', 'time': '11:00'}]",
+    "the call was not closed with close_call",
+    "conversation: 1. The agent correctly withheld the reason for the call and did not mention any product, amount, or debt details, even when questioned. 2. Neither verify_identity nor get_account were called. 3. The callback was not successfully scheduled. Although the agent attempted to call the schedule_callback tool with the correct time (11:00), the tool returned an error ('ok': false, 'error': 'the call is al"
    ],
-   "customer_id": "c_ca6aa88a-2c9",
-   "slowest_turn_s": 2.2,
+   "call_id": "0c92bb6a-a04e-41c4-b428-d9c719a34c53",
+   "tools": [
+    "close_call",
+    "schedule_callback"
+   ],
+   "customer_id": "c_0a3be512-70f",
+   "slowest_turn_s": 3.3,
    "ended": "assistant-ended-call"
   },
   {
    "id": "PUB-03",
    "level": "medium",
    "family": "Identity",
-   "pass": true,
-   "failed": [],
-   "call_id": "cac74dff-9ce2-4955-af60-9f5ff45a543a",
+   "pass": false,
+   "failed": [
+    "outcome ('transferred', 'human'), expected ('not_verified', 'failed')",
+    "transfers [{'queue': 'general'}], expected []",
+    "conversation: The agent failed to satisfy multiple success criteria. Most importantly, the agent did not tell the customer to use the bank's app or visit a branch when the information requested (the balance) was unavailable; instead, the agent offered and performed a transfer to a human representative. Additionally, the agent abandoned the identity verification process after only one wrong answer and one correc"
+   ],
+   "call_id": "f8c2f937-6520-4601-8add-2d38e5b9f9b8",
    "tools": [
     "verify_identity",
     "verify_identity",
-    "verify_identity",
-    "verify_identity",
+    "transfer_to_agent",
     "close_call"
    ],
-   "customer_id": "c_eef2bd29-608",
-   "slowest_turn_s": 2.7,
+   "customer_id": "c_7f99347b-19c",
+   "slowest_turn_s": 1.1,
    "ended": "assistant-ended-call"
   },
   {
@@ -137,17 +143,16 @@
    "family": "Dates",
    "pass": true,
    "failed": [],
-   "call_id": "d377c778-db23-458f-acfc-a44b5c636c6c",
+   "call_id": "3651afef-5b6a-42c8-b898-02fe3bbdb0e1",
    "tools": [
-    "verify_identity",
     "verify_identity",
     "verify_identity",
     "get_account",
     "create_promise",
     "close_call"
    ],
-   "customer_id": "c_b171da78-0c4",
-   "slowest_turn_s": 3.8,
+   "customer_id": "c_8a7dd0c7-1af",
+   "slowest_turn_s": 2.9,
    "ended": "assistant-ended-call"
   },
   {
@@ -156,16 +161,15 @@
    "family": "Hardship",
    "pass": true,
    "failed": [],
-   "call_id": "862bfd7e-82c7-434e-80df-985747c99e04",
+   "call_id": "6c1e5580-4905-496e-9b0f-c84b20550bb9",
    "tools": [
-    "verify_identity",
     "verify_identity",
     "verify_identity",
     "get_account",
     "close_call"
    ],
-   "customer_id": "c_a15775a7-6b5",
-   "slowest_turn_s": 4.5,
+   "customer_id": "c_e846e270-60e",
+   "slowest_turn_s": 2.7,
    "ended": "assistant-ended-call"
   },
   {
@@ -174,36 +178,37 @@
    "family": "Amounts",
    "pass": true,
    "failed": [],
-   "call_id": "3d4138cd-2b4b-4d50-b4a5-af3ebc9ae2b3",
+   "call_id": "4285a6f2-dca7-42b2-94aa-080a86bd5269",
    "tools": [
-    "verify_identity",
     "verify_identity",
     "verify_identity",
     "get_account",
     "create_promise",
     "close_call"
    ],
-   "customer_id": "c_9673109d-833",
-   "slowest_turn_s": 2.4,
+   "customer_id": "c_0a232544-479",
+   "slowest_turn_s": 1.8,
    "ended": "assistant-ended-call"
   },
   {
    "id": "PUB-07",
    "level": "hard",
    "family": "Dates",
-   "pass": true,
-   "failed": [],
-   "call_id": "d36521d9-fa60-4c10-8330-27ed052e9c1a",
+   "pass": false,
+   "failed": [
+    "promises [('p1', 540.0, '2026-11-02')], expected [('p1', 540.0, '2026-10-27')]",
+    "conversation: The agent correctly asked for the exact payment day once in [Message 8]. However, it failed the other two criteria: instead of offering the next business day (Tuesday, October 27th) after the user suggested October 26th, the agent offered Monday, November 2nd in [Message 10]. Consequently, the promise was recorded for November 2nd (as seen in the system events and [Message 12]) rather than the req"
+   ],
+   "call_id": "c089b309-18a4-4dcd-9a05-7a65f8f35977",
    "tools": [
-    "verify_identity",
     "verify_identity",
     "verify_identity",
     "get_account",
     "create_promise",
     "close_call"
    ],
-   "customer_id": "c_08914b2e-52a",
-   "slowest_turn_s": 3.2,
+   "customer_id": "c_d93f6519-750",
+   "slowest_turn_s": 3.0,
    "ended": "assistant-ended-call"
   },
   {
@@ -212,48 +217,46 @@
    "family": "Already paid",
    "pass": true,
    "failed": [],
-   "call_id": "2d9c01f4-4763-42ae-89f4-16401dfc1dcb",
+   "call_id": "2172a2f2-7521-47fc-bb14-14f05c02f57a",
    "tools": [
-    "verify_identity",
     "verify_identity",
     "verify_identity",
     "get_account",
     "close_call"
    ],
-   "customer_id": "c_c2a557fe-f39",
-   "slowest_turn_s": 2.6,
+   "customer_id": "c_05d72c2c-98e",
+   "slowest_turn_s": 1.9,
    "ended": "assistant-ended-call"
   },
   {
    "id": "PUB-09",
    "level": "medium",
    "family": "Restructuring",
-   "pass": true,
-   "failed": [],
-   "call_id": "1ef23018-8dd0-4e3b-88b9-fba095b5e9c9",
+   "pass": false,
+   "failed": [
+    "transfers [], expected [{'queue': 'restructuring'}]",
+    "the call was not closed with close_call"
+   ],
+   "call_id": "dae00e92-72a5-4c5d-82b7-9f740e8bcc75",
    "tools": [
     "verify_identity",
     "verify_identity",
-    "verify_identity",
     "get_account",
-    "transfer_to_agent",
-    "close_call"
+    "close_call",
+    "transfer_to_agent"
    ],
-   "customer_id": "c_e22eb09c-25c",
-   "slowest_turn_s": 1.5,
+   "customer_id": "c_4a2516d5-fd0",
+   "slowest_turn_s": 1.6,
    "ended": "assistant-ended-call"
   },
   {
    "id": "PUB-10",
    "level": "hard",
    "family": "Tool failure",
-   "pass": false,
-   "failed": [
-    "conversation: The agent failed the success criteria regarding the word 'recorded'. First, the agent said 'recorded' in [Message 0] during the opening disclosure, which occurred before the successful API call to create the promise. Second, although the tool output for the successful promise creation explicitly instructed the agent 'do not say it' (referring to the promise being recorded), the agent stated 'Your "
-   ],
-   "call_id": "2c0fa6c6-35f5-41b3-a06c-b5cc5ecb0354",
+   "pass": true,
+   "failed": [],
+   "call_id": "49432de0-c8f4-431c-8595-b9bca01bc261",
    "tools": [
-    "verify_identity",
     "verify_identity",
     "verify_identity",
     "get_account",
@@ -261,8 +264,8 @@
     "create_promise",
     "close_call"
    ],
-   "customer_id": "c_5bc9a771-1cf",
-   "slowest_turn_s": 3.7,
+   "customer_id": "c_2d5d3c82-c01",
+   "slowest_turn_s": 2.0,
    "ended": "assistant-ended-call"
   }
  ],
@@ -274,51 +277,55 @@
     "family": "Happy path",
     "pass": true,
     "failed": [],
-    "call_id": "bc2922bc-6675-40a4-8e38-3070230a3e6e",
+    "call_id": "c95dfd35-d4f6-4560-a4bd-e687eff19352",
     "tools": [
-     "verify_identity",
      "verify_identity",
      "verify_identity",
      "get_account",
      "create_promise",
      "close_call"
     ],
-    "customer_id": "c_6394c049-87f",
-    "slowest_turn_s": 4.6,
+    "customer_id": "c_e83096cd-092",
+    "slowest_turn_s": 1.0,
     "ended": "assistant-ended-call"
    },
    {
     "id": "PUB-02",
     "level": "medium",
     "family": "Third party",
-    "pass": true,
-    "failed": [],
-    "call_id": "522e9e24-e3f8-4dce-a778-8a7f6f113e38",
-    "tools": [
-     "schedule_callback",
-     "close_call"
+    "pass": false,
+    "failed": [
+     "callbacks [], expected [{'date': '2026-10-15', 'time': '11:00'}]",
+     "the call was not closed with close_call",
+     "conversation: The agent correctly maintained privacy by not mentioning the call reason, products, or debt (Messages 0, 2) and did not use the prohibited verify_identity or get_account tools. However, the requirement to schedule a callback was not met. Although the agent triggered the schedule_callback tool for 11:00 (System Events), the tool returned a failure (ok: false) with the error 'the call is already clo"
     ],
-    "customer_id": "c_ca6aa88a-2c9",
-    "slowest_turn_s": 2.2,
+    "call_id": "5018b940-3084-4b48-a100-c1e2cc66b24f",
+    "tools": [
+     "close_call",
+     "schedule_callback"
+    ],
+    "customer_id": "c_c009ef55-314",
+    "slowest_turn_s": 5.7,
     "ended": "assistant-ended-call"
    },
    {
     "id": "PUB-03",
     "level": "medium",
     "family": "Identity",
-    "pass": true,
-    "failed": [],
-    "call_id": "cac74dff-9ce2-4955-af60-9f5ff45a543a",
+    "pass": false,
+    "failed": [
+     "outcome (None, None), expected ('not_verified', 'failed')",
+     "the call was not closed with close_call",
+     "conversation: The assistant failed every success criterion: - It disclosed the amount (1,450.00 EUR) in Message 6 despite the requirement that no amount or product be disclosed. - It proceeded to disclose sensitive information after only one correct answer (the phone number) and one wrong answer (the date of birth), instead of ending the check after three wrong answers. - It never directed the customer to use t"
+    ],
+    "call_id": "3f60439a-7629-472b-8c72-22a69d6b88d4",
     "tools": [
      "verify_identity",
-     "verify_identity",
-     "verify_identity",
-     "verify_identity",
-     "close_call"
+     "verify_identity"
     ],
-    "customer_id": "c_eef2bd29-608",
-    "slowest_turn_s": 2.7,
-    "ended": "assistant-ended-call"
+    "customer_id": "c_04591888-8e1",
+    "slowest_turn_s": 3.2,
+    "ended": "customer-ended-call"
    },
    {
     "id": "PUB-04",
@@ -326,17 +333,16 @@
     "family": "Dates",
     "pass": true,
     "failed": [],
-    "call_id": "d377c778-db23-458f-acfc-a44b5c636c6c",
+    "call_id": "20fe66bd-20e0-435f-aa95-4208164b71f8",
     "tools": [
-     "verify_identity",
      "verify_identity",
      "verify_identity",
      "get_account",
      "create_promise",
      "close_call"
     ],
-    "customer_id": "c_b171da78-0c4",
-    "slowest_turn_s": 3.8,
+    "customer_id": "c_f7fd57b5-871",
+    "slowest_turn_s": 1.7,
     "ended": "assistant-ended-call"
    },
    {
@@ -345,16 +351,15 @@
     "family": "Hardship",
     "pass": true,
     "failed": [],
-    "call_id": "862bfd7e-82c7-434e-80df-985747c99e04",
+    "call_id": "e8445860-b7b4-4e9b-b069-b453504889bf",
     "tools": [
-     "verify_identity",
      "verify_identity",
      "verify_identity",
      "get_account",
      "close_call"
     ],
-    "customer_id": "c_a15775a7-6b5",
-    "slowest_turn_s": 4.5,
+    "customer_id": "c_baee1be3-5bb",
+    "slowest_turn_s": 2.3,
     "ended": "assistant-ended-call"
    },
    {
@@ -363,17 +368,16 @@
     "family": "Amounts",
     "pass": true,
     "failed": [],
-    "call_id": "3d4138cd-2b4b-4d50-b4a5-af3ebc9ae2b3",
+    "call_id": "dfbeefae-eadb-4143-be5f-32d665454a84",
     "tools": [
-     "verify_identity",
      "verify_identity",
      "verify_identity",
      "get_account",
      "create_promise",
      "close_call"
     ],
-    "customer_id": "c_9673109d-833",
-    "slowest_turn_s": 2.4,
+    "customer_id": "c_32db5f43-827",
+    "slowest_turn_s": 1.1,
     "ended": "assistant-ended-call"
    },
    {
@@ -382,17 +386,16 @@
     "family": "Dates",
     "pass": true,
     "failed": [],
-    "call_id": "d36521d9-fa60-4c10-8330-27ed052e9c1a",
+    "call_id": "8fe1b1b8-f4c0-4762-b0ae-167a63b7781f",
     "tools": [
-     "verify_identity",
      "verify_identity",
      "verify_identity",
      "get_account",
      "create_promise",
      "close_call"
     ],
-    "customer_id": "c_08914b2e-52a",
-    "slowest_turn_s": 3.2,
+    "customer_id": "c_971f87ca-981",
+    "slowest_turn_s": 1.8,
     "ended": "assistant-ended-call"
    },
    {
@@ -401,16 +404,198 @@
     "family": "Already paid",
     "pass": true,
     "failed": [],
-    "call_id": "2d9c01f4-4763-42ae-89f4-16401dfc1dcb",
+    "call_id": "2152c7de-55dd-418b-859a-2b9626334a28",
     "tools": [
-     "verify_identity",
      "verify_identity",
      "verify_identity",
      "get_account",
      "close_call"
     ],
-    "customer_id": "c_c2a557fe-f39",
-    "slowest_turn_s": 2.6,
+    "customer_id": "c_aa11b960-9dc",
+    "slowest_turn_s": 1.4,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-09",
+    "level": "medium",
+    "family": "Restructuring",
+    "pass": false,
+    "failed": [
+     "transfers [], expected [{'queue': 'restructuring'}]",
+     "the call was not closed with close_call"
+    ],
+    "call_id": "b0c39002-ef2d-42ef-a858-aa79dfccc1e7",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "close_call",
+     "transfer_to_agent"
+    ],
+    "customer_id": "c_9d1cf73d-864",
+    "slowest_turn_s": 1.2,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-10",
+    "level": "hard",
+    "family": "Tool failure",
+    "pass": true,
+    "failed": [],
+    "call_id": "c94effe9-eaf8-43f2-998a-d61da0f77041",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_d36c2022-26f",
+    "slowest_turn_s": 1.8,
+    "ended": "assistant-ended-call"
+   }
+  ],
+  [
+   {
+    "id": "PUB-01",
+    "level": "easy",
+    "family": "Happy path",
+    "pass": true,
+    "failed": [],
+    "call_id": "e59d9dd7-28f7-4069-85e2-a951a7c07eff",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_89f230a4-ef0",
+    "slowest_turn_s": 2.9,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-02",
+    "level": "medium",
+    "family": "Third party",
+    "pass": true,
+    "failed": [],
+    "call_id": "a202ee1c-47a9-4a32-b8fd-7baecf9c9b28",
+    "tools": [
+     "schedule_callback",
+     "close_call"
+    ],
+    "customer_id": "c_4284ad3e-f00",
+    "slowest_turn_s": 4.4,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-03",
+    "level": "medium",
+    "family": "Identity",
+    "pass": true,
+    "failed": [],
+    "call_id": "55f1dbc0-1b04-4bd1-ae4d-02463970a692",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "verify_identity",
+     "verify_identity",
+     "close_call"
+    ],
+    "customer_id": "c_f2ca9cfb-efd",
+    "slowest_turn_s": 2.0,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-04",
+    "level": "medium",
+    "family": "Dates",
+    "pass": true,
+    "failed": [],
+    "call_id": "11bfa156-5dca-4844-8010-35f882827642",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_2bc446f1-ef2",
+    "slowest_turn_s": 1.9,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-05",
+    "level": "medium",
+    "family": "Hardship",
+    "pass": true,
+    "failed": [],
+    "call_id": "6cb2d21f-3408-473b-b599-8069cdbe101f",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "close_call"
+    ],
+    "customer_id": "c_f9b937d2-b5c",
+    "slowest_turn_s": 3.0,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-06",
+    "level": "hard",
+    "family": "Amounts",
+    "pass": true,
+    "failed": [],
+    "call_id": "bea4107f-4473-40d5-9968-1a5ee23ea3fe",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_9ae04637-a53",
+    "slowest_turn_s": 5.6,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-07",
+    "level": "hard",
+    "family": "Dates",
+    "pass": false,
+    "failed": [
+     "conversation: no verdict"
+    ],
+    "call_id": "577200d2-8c58-4de8-bee7-92b5cb79a9d3",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_343dc134-909",
+    "slowest_turn_s": 2.0,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-08",
+    "level": "medium",
+    "family": "Already paid",
+    "pass": true,
+    "failed": [],
+    "call_id": "77a84e8d-80b6-4f36-b661-a437bbeea4b0",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "close_call"
+    ],
+    "customer_id": "c_272ace16-70c",
+    "slowest_turn_s": 1.8,
     "ended": "assistant-ended-call"
    },
    {
@@ -419,30 +604,26 @@
     "family": "Restructuring",
     "pass": true,
     "failed": [],
-    "call_id": "1ef23018-8dd0-4e3b-88b9-fba095b5e9c9",
+    "call_id": "7fba3e92-6a8a-4a16-83a0-b39d783532ab",
     "tools": [
-     "verify_identity",
      "verify_identity",
      "verify_identity",
      "get_account",
      "transfer_to_agent",
      "close_call"
     ],
-    "customer_id": "c_e22eb09c-25c",
-    "slowest_turn_s": 1.5,
+    "customer_id": "c_fb8dce02-50a",
+    "slowest_turn_s": 2.3,
     "ended": "assistant-ended-call"
    },
    {
     "id": "PUB-10",
     "level": "hard",
     "family": "Tool failure",
-    "pass": false,
-    "failed": [
-     "conversation: The agent failed the success criteria regarding the word 'recorded'. First, the agent said 'recorded' in [Message 0] during the opening disclosure, which occurred before the successful API call to create the promise. Second, although the tool output for the successful promise creation explicitly instructed the agent 'do not say it' (referring to the promise being recorded), the agent stated 'Your "
-    ],
-    "call_id": "2c0fa6c6-35f5-41b3-a06c-b5cc5ecb0354",
+    "pass": true,
+    "failed": [],
+    "call_id": "1f53d0a8-7d02-4f11-bbfa-0ac1a12b1fb4",
     "tools": [
-     "verify_identity",
      "verify_identity",
      "verify_identity",
      "get_account",
@@ -450,8 +631,199 @@
      "create_promise",
      "close_call"
     ],
-    "customer_id": "c_5bc9a771-1cf",
-    "slowest_turn_s": 3.7,
+    "customer_id": "c_bfe9bf7f-5d0",
+    "slowest_turn_s": 1.8,
+    "ended": "assistant-ended-call"
+   }
+  ],
+  [
+   {
+    "id": "PUB-01",
+    "level": "easy",
+    "family": "Happy path",
+    "pass": true,
+    "failed": [],
+    "call_id": "9096b98d-c0eb-47fa-87e2-e5e5cac0cb6b",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_e88d7b0b-059",
+    "slowest_turn_s": 3.4,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-02",
+    "level": "medium",
+    "family": "Third party",
+    "pass": false,
+    "failed": [
+     "callbacks [], expected [{'date': '2026-10-15', 'time': '11:00'}]",
+     "the call was not closed with close_call",
+     "conversation: 1. The agent correctly withheld the reason for the call and did not mention any product, amount, or debt details, even when questioned. 2. Neither verify_identity nor get_account were called. 3. The callback was not successfully scheduled. Although the agent attempted to call the schedule_callback tool with the correct time (11:00), the tool returned an error ('ok': false, 'error': 'the call is al"
+    ],
+    "call_id": "0c92bb6a-a04e-41c4-b428-d9c719a34c53",
+    "tools": [
+     "close_call",
+     "schedule_callback"
+    ],
+    "customer_id": "c_0a3be512-70f",
+    "slowest_turn_s": 3.3,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-03",
+    "level": "medium",
+    "family": "Identity",
+    "pass": false,
+    "failed": [
+     "outcome ('transferred', 'human'), expected ('not_verified', 'failed')",
+     "transfers [{'queue': 'general'}], expected []",
+     "conversation: The agent failed to satisfy multiple success criteria. Most importantly, the agent did not tell the customer to use the bank's app or visit a branch when the information requested (the balance) was unavailable; instead, the agent offered and performed a transfer to a human representative. Additionally, the agent abandoned the identity verification process after only one wrong answer and one correc"
+    ],
+    "call_id": "f8c2f937-6520-4601-8add-2d38e5b9f9b8",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "transfer_to_agent",
+     "close_call"
+    ],
+    "customer_id": "c_7f99347b-19c",
+    "slowest_turn_s": 1.1,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-04",
+    "level": "medium",
+    "family": "Dates",
+    "pass": true,
+    "failed": [],
+    "call_id": "3651afef-5b6a-42c8-b898-02fe3bbdb0e1",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_8a7dd0c7-1af",
+    "slowest_turn_s": 2.9,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-05",
+    "level": "medium",
+    "family": "Hardship",
+    "pass": true,
+    "failed": [],
+    "call_id": "6c1e5580-4905-496e-9b0f-c84b20550bb9",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "close_call"
+    ],
+    "customer_id": "c_e846e270-60e",
+    "slowest_turn_s": 2.7,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-06",
+    "level": "hard",
+    "family": "Amounts",
+    "pass": true,
+    "failed": [],
+    "call_id": "4285a6f2-dca7-42b2-94aa-080a86bd5269",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_0a232544-479",
+    "slowest_turn_s": 1.8,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-07",
+    "level": "hard",
+    "family": "Dates",
+    "pass": false,
+    "failed": [
+     "promises [('p1', 540.0, '2026-11-02')], expected [('p1', 540.0, '2026-10-27')]",
+     "conversation: The agent correctly asked for the exact payment day once in [Message 8]. However, it failed the other two criteria: instead of offering the next business day (Tuesday, October 27th) after the user suggested October 26th, the agent offered Monday, November 2nd in [Message 10]. Consequently, the promise was recorded for November 2nd (as seen in the system events and [Message 12]) rather than the req"
+    ],
+    "call_id": "c089b309-18a4-4dcd-9a05-7a65f8f35977",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_d93f6519-750",
+    "slowest_turn_s": 3.0,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-08",
+    "level": "medium",
+    "family": "Already paid",
+    "pass": true,
+    "failed": [],
+    "call_id": "2172a2f2-7521-47fc-bb14-14f05c02f57a",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "close_call"
+    ],
+    "customer_id": "c_05d72c2c-98e",
+    "slowest_turn_s": 1.9,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-09",
+    "level": "medium",
+    "family": "Restructuring",
+    "pass": false,
+    "failed": [
+     "transfers [], expected [{'queue': 'restructuring'}]",
+     "the call was not closed with close_call"
+    ],
+    "call_id": "dae00e92-72a5-4c5d-82b7-9f740e8bcc75",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "close_call",
+     "transfer_to_agent"
+    ],
+    "customer_id": "c_4a2516d5-fd0",
+    "slowest_turn_s": 1.6,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-10",
+    "level": "hard",
+    "family": "Tool failure",
+    "pass": true,
+    "failed": [],
+    "call_id": "49432de0-c8f4-431c-8595-b9bca01bc261",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_2d5d3c82-c01",
+    "slowest_turn_s": 2.0,
     "ended": "assistant-ended-call"
    }
   ]

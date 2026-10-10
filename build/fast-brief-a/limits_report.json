@@ -3,7 +3,7 @@
   "limit": "identity.wrong_limit",
   "n": 3,
   "how": "route on the bank's own count (wrong_answers_left)",
-  "where": "opening"
+  "where": "identity"
  },
  {
   "limit": "promise.failure_limit",
@@ -21,13 +21,13 @@
   "limit": "opening.confirm_asks",
   "n": 2,
   "how": "prompt_only",
-  "where": "opening"
+  "where": "who"
  },
  {
   "limit": "callback.other_time_asks",
   "n": 1,
   "how": "prompt_only",
-  "where": "opening"
+  "where": "who"
  },
  {
   "limit": "attempts (band early)",

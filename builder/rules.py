@@ -85,6 +85,8 @@ SHAPE = r"""
   "ending": {"request field of close_call": "value"}
  },
 
+ "notes": {"used": false, "when": "empty, or when the brief requires add_note"},
+
  "endings": [{"when": "the situation", "fields": {"request field of close_call": "value"}, "rule": "rule number"}],
 
  "tool_descriptions": {"tool name": "one instruction: what the tool does and exactly when to CALL it, from the brief"},

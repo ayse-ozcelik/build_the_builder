@@ -4,7 +4,7 @@ One short model call per text, all at the same time. Each call gets only the rul
 its own step (from the rules file) and a description of what the fixed structure already
 does, so the text never repeats or contradicts the structure.
 
-    write_prompts(rules, cwd) -> {"system": ..., "opening": ..., "negotiation": ..., "after_promise": ...}
+    write_prompts(rules, cwd) -> {"system": ..., "who": ..., "identity": ..., "negotiation": ..., "after_promise": ...}
 """
 import asyncio
 import json
@@ -46,18 +46,27 @@ as the last tool call, in the same message as the thanks and goodbye.
 CLOSING TABLE (situation -> values to send with %(close)s):
 %(endings)s
 """,
-    "opening": """THIS TEXT: the first step, from the first sentence until the identity check is over.
+    "who": """THIS TEXT: the first step: finding out who is on the line. It ends when the customer in person is confirmed.
 Already spoken by the system: "%(opening_line)s"
-Tools here: %(identity)s, %(callback)s, %(transfer)s, %(close)s.
-The security questions, in order (ask one at a time, CALL %(identity)s with every answer, never judge an answer yourself):
+Tools here: %(callback)s, %(transfer)s, %(close)s. There is no identity tool in this step: nobody is asked a security
+question here, and nothing the person says here is a security answer.
+The system does this by itself, so do not tell the agent to do it:
+- When the person has confirmed being the customer, the agent must CALL transition_to_identity (write exactly this).
+  The system then asks the first security question itself.
+The agent knows nothing about the reason for the call and must not hint at it to anyone.
+The question who is on the line may be asked %(confirm_asks)s times in total, counting the one the system already asked.
+Facts block added under your text: the call's date and time, and the callback window with the days and hours that
+may be scheduled and the days that are outside it (the caller may be offered another time %(other_time_asks)s time(s)).
+""",
+    "identity": """THIS TEXT: the security check. The customer in person is on the line.
+Already spoken by the system: the first security question, "%(first_question)s"
+Tools here: %(identity)s, %(transfer)s, %(close)s.
+The security questions, in order (one at a time, CALL %(identity)s with every answer, never judge an answer yourself):
 %(questions)s
 The system does these by itself, so do not tell the agent to do or to count them:
 - When the check has failed for good, the system says the closing sentence and closes the call.
 - When the check has passed, the system moves on and states the reason for the call.
-Until the check has passed the agent knows nothing about the reason for the call and must not hint at it to anyone.
-The agent may ask "%(confirm_asks)s" times in total who is on the line.
-Facts block added under your text: the call's date and time, and the callback window with the days and hours that
-may be scheduled and the days that are outside it (the caller may be offered another time %(other_time_asks)s time(s)).
+Until the check has passed the agent knows nothing about the reason for the call and must not hint at it.
 """,
     "negotiation": """THIS TEXT: the step after the identity check passed, until a promise is recorded or the call is closed.
 Already spoken by the system: the reason for the call, each product with its amount and lateness, and the question
@@ -81,9 +90,9 @@ Tell the agent to close the call now with the values for a recorded promise (%(p
 for something the rules below cover.
 """,
 }
-STEPS_FOR = {"system": ("everywhere",), "opening": ("opening", "third_party", "identity"),
+STEPS_FOR = {"system": ("everywhere",), "who": ("opening", "third_party"), "identity": ("identity",),
              "negotiation": ("negotiation",), "after_promise": ("after_promise",)}
-WORDS = {"system": 450, "opening": 650, "negotiation": 900, "after_promise": 200}
+WORDS = {"system": 450, "who": 450, "identity": 350, "negotiation": 900, "after_promise": 200}
 
 
 def build_request(rules, part):
@@ -94,7 +103,7 @@ def build_request(rules, part):
                   questions="\n".join("- %s: \"%s\" (send %s = %s, answer as %s)" % (
                       i + 1, q["ask"], rules["identity"]["question_field"], q["value"], q.get("send_as") or q["kind"])
                       for i, q in enumerate(rules["identity"]["questions"])),
-                  first_ask=rules["account"]["first_ask"], recorded_line=rules["promise"]["recorded_line"],
+                  first_question=rules["identity"]["questions"][0]["ask"], first_ask=rules["account"]["first_ask"], recorded_line=rules["promise"]["recorded_line"],
                   failure_limit=rules["promise"]["failure_limit"], promise_ending=json.dumps(rules["promise"]["ending"]))
     common = COMMON % {"language": rules["language"], "name": rules["say_name_as"], "words": WORDS[part],
                        "variables": ", ".join(rules.get("call_variables", [])) or "none"}
