@@ -1,0 +1,44 @@
+[
+ {
+  "limit": "identity.wrong_limit",
+  "n": 3,
+  "how": "route on the bank's own count (wrong_answers_left)",
+  "where": "opening"
+ },
+ {
+  "limit": "promise.failure_limit",
+  "n": 2,
+  "how": "tool_limit",
+  "where": "collect, collect_after_offer"
+ },
+ {
+  "limit": "floor_offer.limit",
+  "n": 1,
+  "how": "counted_step (fixed line, said on entry)",
+  "where": "floor_gate"
+ },
+ {
+  "limit": "opening.confirm_asks",
+  "n": 2,
+  "how": "prompt_only",
+  "where": "opening"
+ },
+ {
+  "limit": "callback.other_time_asks",
+  "n": 1,
+  "how": "prompt_only",
+  "where": "opening"
+ },
+ {
+  "limit": "attempts (band early)",
+  "n": 1,
+  "how": "prompt_only, with the allowed number and each proposal computed in code",
+  "where": "collect"
+ },
+ {
+  "limit": "attempts (band late)",
+  "n": 2,
+  "how": "prompt_only, with the allowed number and each proposal computed in code",
+  "where": "collect"
+ }
+]
