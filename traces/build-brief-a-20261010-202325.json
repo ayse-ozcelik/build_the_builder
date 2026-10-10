@@ -1,0 +1,72 @@
+{
+  "started_at": "2026-10-10T17:23:25+00:00",
+  "ended_at": "2026-10-10T17:44:50+00:00",
+  "duration_seconds": 1284.5,
+  "status": "ok",
+  "brief": "kit/briefs/brief-a.md",
+  "tool_api": "kit/tools/openapi.json",
+  "model_calls": [
+    {
+      "at": "2026-10-10T17:23:25+00:00",
+      "model": "claude-opus-5-5",
+      "purpose": "read the brief files and write the structured rule list (spec)"
+    },
+    {
+      "at": "2026-10-10T17:25:24+00:00",
+      "model": "claude-opus-5-5",
+      "purpose": "compile session: write the workflow from spec and tools, save it, test it, fix failures"
+    }
+  ],
+  "workflows": [
+    {
+      "at": "2026-10-10T17:44:49+00:00",
+      "workflow_id": "fa765caf-987d-4d19-8353-4611cbb0bdd4",
+      "agent_id": "dadb25c6-fec0-41b0-8874-b1644dda388a",
+      "step_count": 61,
+      "tool_count": 3
+    }
+  ],
+  "self_tests": [
+    {
+      "at": "2026-10-10T17:44:49+00:00",
+      "name": "every limit of the spec is accounted for",
+      "passed": true,
+      "detail": "16 limits; left to the prompt: none"
+    },
+    {
+      "at": "2026-10-10T17:44:49+00:00",
+      "name": "practice customers, test-1.json",
+      "passed": false,
+      "detail": "1 of 10 passed; failed: PUB-01, PUB-03, PUB-04, PUB-05, PUB-06, PUB-07, PUB-08, PUB-09, PUB-10"
+    },
+    {
+      "at": "2026-10-10T17:44:49+00:00",
+      "name": "practice customers, test-2.json",
+      "passed": true,
+      "detail": "10 of 10 passed"
+    }
+  ],
+  "notes": [
+    {
+      "at": "2026-10-10T17:23:25+00:00",
+      "message": "tools_gen: 7 tools (verify_identity, get_account, create_promise, add_note, schedule_callback, transfer_to_agent, close_call)"
+    },
+    {
+      "at": "2026-10-10T17:25:24+00:00",
+      "message": "extract: 8 stages, 16 limits (identity_confirmation_asks, callback_other_time_ask, wrong_security_answers, security_questions_explanation, security_refusals, exact_day_ask, floor_offer_full_too_much, floor_offer_below_floor, persuasion_attempts, refused_offer_repeat, sympathy_sentence, promise_per_product, create_promise_failures, help_first_ask, does_not_want_to_talk, close_call_once), 17 endings"
+    },
+    {
+      "at": "2026-10-10T17:44:49+00:00",
+      "message": "compile session: 18 turns, 1163 s, $2.32"
+    },
+    {
+      "at": "2026-10-10T17:44:50+00:00",
+      "message": "exported to submission/brief-a.workflow.json"
+    }
+  ],
+  "summary": {
+    "model_call_count": 2,
+    "self_tests_passed": 2,
+    "self_tests_total": 3
+  }
+}

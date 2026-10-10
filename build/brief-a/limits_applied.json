@@ -1,0 +1,98 @@
+[
+ {
+  "id": "identity_confirmation_asks",
+  "how": "counted_step",
+  "where": "who_gate",
+  "why": "The first ask is the fixed opening line of who_ask; every further ask is the entry line of who_again, reachable only through who_gate (n-1 re-asks), then end_unclear."
+ },
+ {
+  "id": "callback_other_time_ask",
+  "how": "counted_step",
+  "where": "cb_gate",
+  "why": "The ask for another time is the fixed line of tp_ask_again behind cb_gate; the second offer outside the window goes to end_no_callback."
+ },
+ {
+  "id": "wrong_security_answers",
+  "how": "tool_limit",
+  "where": "verify_identity in ask_dob/ask_phone and their copies",
+  "why": "Post-hook counts verified=false (hint and unreadable results are removed first); also routes on the bank's wrong_answers_left."
+ },
+ {
+  "id": "security_questions_explanation",
+  "how": "counted_step",
+  "where": "explain_gate_dob / explain_gate_phone",
+  "why": "The explanation is the fixed entry line of explain_<question>, behind a gate with one shared counter."
+ },
+ {
+  "id": "security_refusals",
+  "how": "code_state",
+  "where": "refusal_gate_dob / refusal_gate_phone",
+  "why": "The caller's refusals are classified by extraction and counted by the gate's code; the second one goes to end_declined."
+ },
+ {
+  "id": "exact_day_ask",
+  "how": "counted_step",
+  "where": "exact_day_gate",
+  "why": "The ask is the fixed line of ask_exact_day; after it the gate goes to propose_deadline."
+ },
+ {
+  "id": "floor_offer_full_too_much",
+  "how": "counted_step",
+  "where": "floor_gate",
+  "why": "The floor offer is the fixed line of offer_floor; the floor amount is not in any prompt."
+ },
+ {
+  "id": "floor_offer_below_floor",
+  "how": "counted_step",
+  "where": "below_gate",
+  "why": "amount_check compares the proposed amount with the floor in code; the offer is the fixed line of offer_floor_below."
+ },
+ {
+  "id": "persuasion_attempts",
+  "how": "code_state",
+  "where": "persuade_gate",
+  "why": "n depends on the band: the gate's code compares its counter with attempts_allowed computed from days_late, then routes to attempt_1, attempt_2 or end_refused."
+ },
+ {
+  "id": "refused_offer_repeat",
+  "how": "code_state",
+  "where": "floor_gate, below_gate, persuade_gate",
+  "why": "Every offer is a fixed line behind a counter, so none is entered twice; a floor already offered by one gate sends the other gate to persuade_gate."
+ },
+ {
+  "id": "sympathy_sentence",
+  "how": "counted_step",
+  "where": "hardship_gate",
+  "why": "The sympathy sentence and support offer are the fixed line of hardship_offer; persuade_gate makes no attempt once it was said."
+ },
+ {
+  "id": "promise_per_product",
+  "how": "tool_limit",
+  "where": "create_promise in every promise node",
+  "why": "The first ok=true leaves for end_promise, which ends the call; no node after it has the tool."
+ },
+ {
+  "id": "create_promise_failures",
+  "how": "tool_limit",
+  "where": "create_promise in every promise node",
+  "why": "Post-hook counts ok=false (a failed service is turned into ok=false first); the second goes to end_service_error."
+ },
+ {
+  "id": "help_first_ask",
+  "how": "counted_step",
+  "where": "human_gate, human_gate_dob, human_gate_phone",
+  "why": "The ask is a fixed line behind gates with one shared counter; the next request goes to end_human."
+ },
+ {
+  "id": "does_not_want_to_talk",
+  "how": "code_state",
+  "where": "talk_gate (after verification), refusal_gate_* (before)",
+  "why": "The caller's statements are classified by extraction and counted by code; the second one closes as refused, or as declined before verification."
+ },
+ {
+  "id": "close_call_once",
+  "how": "code_state",
+  "where": "do_close",
+  "why": "close_call exists in one engine-run node only, entered from an ending and followed by the end of the call; the model has no close_call tool."
+ }
+]

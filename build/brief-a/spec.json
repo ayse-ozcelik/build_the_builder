@@ -1,0 +1,814 @@
+{
+ "summary": "Freya Bank calls a customer who is 1 to 45 days late on one product to find the customer, check identity, state the debt, get a payment promise where it can, and close the call with the correct outcome.",
+ "call_variables": [
+  {
+   "name": "customer_id",
+   "meaning": "Pass it to every tool call. (Brief §2; example c_4f2a...)"
+  },
+  {
+   "name": "first_name",
+   "meaning": "First name of the person to ask for. (Brief §2; example Daniel)"
+  },
+  {
+   "name": "last_name",
+   "meaning": "Last name of the person to ask for; used with title to address the customer. (Brief §2; example Reyes)"
+  },
+  {
+   "name": "title",
+   "meaning": "Mr or Ms. Address the customer as title plus last name. (Brief §2)"
+  },
+  {
+   "name": "now",
+   "meaning": "The current date and time, e.g. 2026-10-14T11:00. All date rules use this, never the real clock. (Brief §2)"
+  }
+ ],
+ "stages": [
+  {
+   "id": "opening",
+   "what_happens": "First sentence: say you are a digital assistant calling from Freya Bank and that the call is recorded. Do not say collections, debt, payment or the product.",
+   "may_start_only_after": "Call start",
+   "tools": []
+  },
+  {
+   "id": "confirm_person",
+   "what_happens": "Ask \"Am I speaking with {title} {last_name}?\". Only \"yes\", \"that's me\", \"speaking\" or the customer's own name confirms; \"Hello\", \"go ahead\" and \"who is this\" do not. Answer a customer question first (rules 4 and 43); the ask that follows is the second ask. If still unclear after the second ask, close not_reached / unclear.",
+   "may_start_only_after": "The opening sentence",
+   "tools": [
+    "close_call"
+   ]
+  },
+  {
+   "id": "someone_else_answers",
+   "what_happens": "Do not say why you are calling, say nothing beyond the opening sentence, ask when the customer can be reached. Schedule a callback inside the window, or close as no_callback, wrong_number or deceased. A relative may not answer security questions or be told anything about the account, even if they offer to pay.",
+   "may_start_only_after": "It is clear that someone other than the customer is on the line",
+   "tools": [
+    "schedule_callback",
+    "close_call"
+   ]
+  },
+  {
+   "id": "identity",
+   "what_happens": "Ask two security questions one at a time: first date of birth, then last four digits of the phone number on file. Call verify_identity with each answer (date of birth as YYYY-MM-DD). Three wrong answers in total end the check. Customer declining leads to one explanation, then close not_verified / declined.",
+   "may_start_only_after": "The customer confirmed they are {title} {last_name} (rule 3)",
+   "tools": [
+    "verify_identity",
+    "close_call"
+   ]
+  },
+  {
+   "id": "state_debt",
+   "what_happens": "Call get_account. Say you are calling from the collections team about a late payment, name the product in words, state the past-due amount and how many days late it is.",
+   "may_start_only_after": "Both security questions pass (rule 16)",
+   "tools": [
+    "get_account"
+   ]
+  },
+  {
+   "id": "get_promise",
+   "what_happens": "Ask for the full past-due amount first and ask \"Can you make this payment today?\". Handle proposed dates (section 7) and amounts (section 8). A flat refusal or non-answer uses one persuasion attempt (1 in early band, 2 in late band). Handle hardship, already paid, dispute, restructuring request, request for a human.",
+   "may_start_only_after": "The debt was stated (rule 17)",
+   "tools": [
+    "transfer_to_agent",
+    "close_call"
+   ]
+  },
+  {
+   "id": "confirm_and_record",
+   "what_happens": "Read the product, the amount and the date back and ask \"Do you confirm?\". Call create_promise only after a clear yes. If the customer changes date or amount, re-check and read back again. Say it is recorded only after ok: true, then say the text-message sentence. On failure try once more; on second failure say you could not record it.",
+   "may_start_only_after": "A date and an amount that pass sections 7 and 8 are agreed",
+   "tools": [
+    "create_promise"
+   ]
+  },
+  {
+   "id": "closing",
+   "what_happens": "Thank the customer and say goodbye, then exactly one close_call with the outcome and, where the table lists one, a reason. It is the last tool call.",
+   "may_start_only_after": "An outcome is reached under the closing table (rule 46)",
+   "tools": [
+    "close_call"
+   ]
+  }
+ ],
+ "not_before": [
+  {
+   "forbidden": "Saying \"collections\", \"debt\", \"payment\" or the product",
+   "until": "Identity is verified",
+   "applies_to": "Everyone, including relatives",
+   "source": "Rule 1: \"Do not say \\\"collections\\\", \\\"debt\\\", \\\"payment\\\" or the product before identity is verified. This applies to everyone, including relatives.\""
+  },
+  {
+   "forbidden": "Saying why you are calling, or anything beyond the opening sentence of rule 1",
+   "until": "Never lifted for this person",
+   "applies_to": "Someone other than the customer who answers",
+   "source": "Rule 5: \"Do not say why you are calling. Say nothing beyond the opening sentence of rule 1.\""
+  },
+  {
+   "forbidden": "Letting a relative answer the security questions or telling them anything about the account, even if they offer to pay",
+   "until": "Never lifted",
+   "applies_to": "Relatives",
+   "source": "Rule 10: \"A relative may not answer the security questions and may not be told anything about the account, even if they offer to pay.\""
+  },
+  {
+   "forbidden": "Asking the identity question again before answering a question the customer asked",
+   "until": "The customer's question is answered (rules 4 and 43)",
+   "applies_to": "The person on the line before confirmation",
+   "source": "Rule 3: \"Answer a question from the customer first (rules 4 and 43). The ask that follows is the second ask.\""
+  },
+  {
+   "forbidden": "Asking the last four digits of the phone number on file",
+   "until": "The date of birth question has been asked first (one at a time)",
+   "applies_to": "The customer",
+   "source": "Rule 11: \"Ask two security questions, one at a time: first the date of birth, then the last four digits of the phone number on file.\""
+  },
+  {
+   "forbidden": "Calling get_account",
+   "until": "Both security questions pass",
+   "applies_to": "The agent",
+   "source": "Rule 16: \"After both questions pass, call `get_account`.\"; openapi /get_account summary: \"Refused until both questions are passed.\""
+  },
+  {
+   "forbidden": "Stating the debt",
+   "until": "Both questions pass; never after three wrong answers",
+   "applies_to": "The customer",
+   "source": "Rule 14: \"After three wrong answers, do not state the debt.\"; rules 16-17"
+  },
+  {
+   "forbidden": "Offering the floor amount",
+   "until": "The full past-due amount was asked for first and the customer said it is too much, or proposed an amount below the floor, or persuasion attempt 2 is reached",
+   "applies_to": "The customer",
+   "source": "Rule 24: \"Ask for the full past-due amount first.\"; rule 26: \"If the customer says the full amount is too much, offer the floor, once.\"; rule 27; rule 30"
+  },
+  {
+   "forbidden": "Persuasion attempt 2 (floor amount on the deadline)",
+   "until": "Attempt 1 was used and the customer is in the late band (days_late 8 to 45)",
+   "applies_to": "The customer",
+   "source": "Rule 30: \"Attempt 2, late band only: propose the floor amount on the deadline.\""
+  },
+  {
+   "forbidden": "Making any persuasion attempt",
+   "until": "Never, once the customer mentions illness, a death in the family or job loss",
+   "applies_to": "The customer",
+   "source": "Rule 32: \"say one short sentence of sympathy and make no persuasion attempt... This rule comes before rules 30 and 41.\""
+  },
+  {
+   "forbidden": "Calling create_promise",
+   "until": "The product, amount and date were read back, \"Do you confirm?\" was asked and the customer gave a clear yes",
+   "applies_to": "The agent",
+   "source": "Rule 34: \"Call `create_promise` only after a clear yes.\""
+  },
+  {
+   "forbidden": "Saying the promise is recorded",
+   "until": "create_promise returns ok: true",
+   "applies_to": "The customer",
+   "source": "Rule 37: \"Say the promise is recorded only after `create_promise` returns `ok: true`.\""
+  },
+  {
+   "forbidden": "Saying \"You will receive a text message confirming this promise.\"",
+   "until": "A promise is recorded",
+   "applies_to": "The customer",
+   "source": "Rule 38: \"After a recorded promise, say this sentence\""
+  },
+  {
+   "forbidden": "Calling transfer_to_agent with queue general for a request for a human",
+   "until": "The agent asked once whether it can help first and the customer insists",
+   "applies_to": "The customer, before and after verification",
+   "source": "Rule 42: \"ask once whether you can help first. If they insist, call `transfer_to_agent` with queue `general`\"; rule 45: \"Rule 42 applies before and after verification.\""
+  },
+  {
+   "forbidden": "Closing as not_reached / callback",
+   "until": "schedule_callback was called with the date and the time",
+   "applies_to": "The agent",
+   "source": "Rule 6: \"Call `schedule_callback` with the date and the time, then close as `not_reached` / `callback`.\""
+  },
+  {
+   "forbidden": "Calling close_call",
+   "until": "The agent thanked the customer and said goodbye; no tool call may follow it",
+   "applies_to": "The agent",
+   "source": "Rule 47: \"Thank the customer and say goodbye before `close_call`.\"; rule 46: \"It is the last tool call.\"; openapi /close_call: \"Always the last tool call. Nothing is accepted after it.\""
+  },
+  {
+   "forbidden": "Changing or cancelling a recorded promise",
+   "until": "Never in the same call",
+   "applies_to": "The agent",
+   "source": "Rule 36: \"A recorded promise cannot be changed or cancelled in the same call.\""
+  }
+ ],
+ "fixed_sentences": [
+  {
+   "when": "Right after the opening sentence, to find out who is on the line",
+   "text": "Am I speaking with {title} {last_name}?",
+   "source": "Rule 2"
+  },
+  {
+   "when": "The person says the customer has died; ask nothing else afterwards",
+   "text": "I am sorry for your loss.",
+   "source": "Rule 9"
+  },
+  {
+   "when": "First ask when getting the promise",
+   "text": "Can you make this payment today?",
+   "source": "Rule 28"
+  },
+  {
+   "when": "After reading the product, the amount and the date back",
+   "text": "Do you confirm?",
+   "source": "Rule 34"
+  },
+  {
+   "when": "After a recorded promise",
+   "text": "You will receive a text message confirming this promise.",
+   "source": "Rule 38"
+  },
+  {
+   "when": "Naming the product when stating the debt (product named in words; card digits from the account)",
+   "text": "\"credit card ending 4821\", \"personal loan\" or \"car loan\"",
+   "source": "Rule 17"
+  }
+ ],
+ "calculations": [
+  {
+   "name": "today",
+   "rule": "The current date and time come from the call variable now, never the real clock.",
+   "inputs": [
+    "now"
+   ],
+   "source": "§2: \"All date rules use this, never the real clock.\""
+  },
+  {
+   "name": "business_day",
+   "rule": "Monday to Friday, except Freya Bank holidays 2026-10-26, 2026-11-11, 2026-11-26, 2026-12-25, 2027-01-01.",
+   "inputs": [
+    "date"
+   ],
+   "source": "§7: \"Business days are Monday to Friday, except Freya Bank holidays\""
+  },
+  {
+   "name": "band",
+   "rule": "days_late 1 to 7 = early; days_late 8 to 45 = late.",
+   "inputs": [
+    "days_late"
+   ],
+   "source": "Rule 18 table"
+  },
+  {
+   "name": "deadline",
+   "rule": "Early band: the 12th business day after today. Late band: the 7th business day after today.",
+   "inputs": [
+    "now",
+    "days_late",
+    "holidays"
+   ],
+   "source": "Rule 18 table"
+  },
+  {
+   "name": "persuasion_attempts_allowed",
+   "rule": "Early band: 1. Late band: 2.",
+   "inputs": [
+    "days_late"
+   ],
+   "source": "Rule 18 table"
+  },
+  {
+   "name": "valid_promise_date",
+   "rule": "Today or later, a business day, and not after the deadline.",
+   "inputs": [
+    "proposed date",
+    "now",
+    "deadline",
+    "holidays"
+   ],
+   "source": "Rule 19"
+  },
+  {
+   "name": "weekend_or_holiday_date",
+   "rule": "If the named day is a weekend day or holiday not after the deadline, offer the next business day. If it is after the deadline, rule 23 applies: say the latest date you can record is the deadline and offer it.",
+   "inputs": [
+    "proposed date",
+    "deadline",
+    "holidays"
+   ],
+   "source": "Rules 20, 23"
+  },
+  {
+   "name": "weekday_phrases",
+   "rule": "\"Next <weekday>\" = that weekday in the following calendar week. \"This <weekday>\" = the one in the current week. \"Next Friday\" said on a Friday is the Friday of the following week.",
+   "inputs": [
+    "now",
+    "named weekday"
+   ],
+   "source": "Rule 22"
+  },
+  {
+   "name": "attempt_1_date",
+   "rule": "The last business day of this week. If today is that day, the last business day of next week.",
+   "inputs": [
+    "now",
+    "holidays"
+   ],
+   "source": "Rule 30"
+  },
+  {
+   "name": "attempt_1_amount",
+   "rule": "The full past-due amount, or the floor if the customer already said the full amount is too much.",
+   "inputs": [
+    "past_due",
+    "floor"
+   ],
+   "source": "Rule 30"
+  },
+  {
+   "name": "attempt_2_offer",
+   "rule": "Late band only: the floor amount on the deadline.",
+   "inputs": [
+    "floor",
+    "deadline",
+    "days_late"
+   ],
+   "source": "Rule 30; rule 26: \"Attempt 2 may name the floor again, on the deadline.\""
+  },
+  {
+   "name": "floor",
+   "rule": "minimum_payment for a credit card; instalment_amount for a personal loan or a car loan.",
+   "inputs": [
+    "type",
+    "minimum_payment",
+    "instalment_amount"
+   ],
+   "source": "Rule 25"
+  },
+  {
+   "name": "acceptable_amount",
+   "rule": "Accept a customer-proposed amount from the floor up to the full past-due amount, both included. Below the floor it cannot be recorded.",
+   "inputs": [
+    "proposed amount",
+    "floor",
+    "past_due"
+   ],
+   "source": "Rule 27"
+  },
+  {
+   "name": "callback_window",
+   "rule": "Today or the next business day, from 10:00 to 19:00, both included, and later than now.",
+   "inputs": [
+    "now",
+    "offered date",
+    "offered time",
+    "holidays"
+   ],
+   "source": "Rule 6"
+  },
+  {
+   "name": "date_of_birth_format",
+   "rule": "Send as YYYY-MM-DD whatever way the customer said it. Read a date given only as numbers as day, then month, then year.",
+   "inputs": [
+    "customer's spoken date of birth"
+   ],
+   "source": "Rule 11; openapi verify_identity answer: \"the date as YYYY-MM-DD. Callers say dates in words, the agent converts.\""
+  }
+ ],
+ "limits": [
+  {
+   "id": "identity_confirmation_asks",
+   "what_is_counted": "Times the agent asks \"Am I speaking with {title} {last_name}?\" without getting a valid confirmation",
+   "n": 2,
+   "n_depends_on": "",
+   "per": "call",
+   "counted_event": "agent_action",
+   "tool": "",
+   "field": "",
+   "value": "",
+   "after_limit": "If still unclear after the second ask, close as not_reached / unclear. An ask that follows answering a customer question counts as the second ask.",
+   "source": "Rule 3: \"Ask once more. If it is still unclear after the second ask, close as `not_reached` / `unclear`.\""
+  },
+  {
+   "id": "callback_other_time_ask",
+   "what_is_counted": "Times the agent asks for another time after the person offers a day or time outside the callback window",
+   "n": 1,
+   "n_depends_on": "",
+   "per": "call",
+   "counted_event": "agent_action",
+   "tool": "",
+   "field": "",
+   "value": "",
+   "after_limit": "If the second offered time is also outside the window, do not schedule; close as not_reached / no_callback.",
+   "source": "Rule 7: \"ask once for another time. If that is also outside it, do not schedule.\""
+  },
+  {
+   "id": "wrong_security_answers",
+   "what_is_counted": "Wrong security answers in total, whichever question they were on. A day_month_swapped hint retry and an unreadable value rejected with ok=false do not count. The response also carries wrong_answers_left.",
+   "n": 3,
+   "n_depends_on": "",
+   "per": "call",
+   "counted_event": "tool_result",
+   "tool": "verify_identity",
+   "field": "verified",
+   "value": "false",
+   "after_limit": "The check ends. Do not state the debt. Tell the customer to use the mobile app or a branch. Close as not_verified / failed.",
+   "source": "Rule 12: \"Three wrong answers in total end the check, whichever question they were on.\"; rule 14; rule 13; openapi verify_identity"
+  },
+  {
+   "id": "security_questions_explanation",
+   "what_is_counted": "Times the agent explains that the questions protect the customer's account",
+   "n": 1,
+   "n_depends_on": "",
+   "per": "call",
+   "counted_event": "agent_action",
+   "tool": "",
+   "field": "",
+   "value": "",
+   "after_limit": "If the customer still declines, close as not_verified / declined.",
+   "source": "Rule 15: \"explain once that the questions protect their account. If they still decline, close as `not_verified` / `declined`.\""
+  },
+  {
+   "id": "security_refusals",
+   "what_is_counted": "Customer refusals to answer the security questions, including asking what the call is about instead of answering",
+   "n": 2,
+   "n_depends_on": "",
+   "per": "call",
+   "counted_event": "caller_action",
+   "tool": "",
+   "field": "",
+   "value": "",
+   "after_limit": "The second refusal or second such question closes the call as not_verified / declined.",
+   "source": "Rule 15: \"Asking what the call is about instead of answering counts as declining. A second refusal or a second such question closes the call.\""
+  },
+  {
+   "id": "exact_day_ask",
+   "what_is_counted": "Times the agent asks for the exact day after a vague period (\"next week\", \"end of the month\", \"when my salary comes\")",
+   "n": 1,
+   "n_depends_on": "",
+   "per": "call",
+   "counted_event": "agent_action",
+   "tool": "",
+   "field": "",
+   "value": "",
+   "after_limit": "If the customer still gives no exact day, propose the deadline.",
+   "source": "Rule 21: \"ask once for the exact day. If they still give none, propose the deadline.\""
+  },
+  {
+   "id": "floor_offer_full_too_much",
+   "what_is_counted": "Times the agent offers the floor after the customer says the full amount is too much (saying the rest stays overdue)",
+   "n": 1,
+   "n_depends_on": "",
+   "per": "product",
+   "counted_event": "agent_action",
+   "tool": "",
+   "field": "",
+   "value": "",
+   "after_limit": "If the customer refuses the floor, treat it as a flat refusal (rule 30). Attempt 2 may name the floor again, on the deadline.",
+   "source": "Rule 26: \"offer the floor, once.\""
+  },
+  {
+   "id": "floor_offer_below_floor",
+   "what_is_counted": "Times the agent offers the floor after the customer proposes an amount below the floor",
+   "n": 1,
+   "n_depends_on": "",
+   "per": "product",
+   "counted_event": "agent_action",
+   "tool": "",
+   "field": "",
+   "value": "",
+   "after_limit": "If the customer does not accept the floor, treat it as a flat refusal (rule 30).",
+   "source": "Rule 27: \"Below the floor, say it cannot be recorded and offer the floor once.\""
+  },
+  {
+   "id": "persuasion_attempts",
+   "what_is_counted": "Persuasion attempts; each flat refusal or non-answer uses one",
+   "n": 1,
+   "n_depends_on": "days_late 1 to 7 (early band): n = 1; days_late 8 to 45 (late band): n = 2",
+   "per": "call (one product)",
+   "counted_event": "agent_action",
+   "tool": "",
+   "field": "",
+   "value": "",
+   "after_limit": "Stop. Do not repeat an offer the customer already refused. Close as no_promise / refused.",
+   "source": "Rule 18 table \"Persuasion attempts\"; rule 30: \"A flat refusal or a non-answer uses one persuasion attempt.\"; rule 31"
+  },
+  {
+   "id": "refused_offer_repeat",
+   "what_is_counted": "Times an offer the customer already refused may be made",
+   "n": 1,
+   "n_depends_on": "",
+   "per": "offer",
+   "counted_event": "agent_action",
+   "tool": "",
+   "field": "",
+   "value": "",
+   "after_limit": "The same refused offer is not made again.",
+   "source": "Rule 31: \"Do not repeat an offer the customer already refused.\""
+  },
+  {
+   "id": "sympathy_sentence",
+   "what_is_counted": "Short sentences of sympathy after the customer mentions illness, a death in the family or job loss",
+   "n": 1,
+   "n_depends_on": "",
+   "per": "call",
+   "counted_event": "agent_action",
+   "tool": "",
+   "field": "",
+   "value": "",
+   "after_limit": "Make no persuasion attempt; offer to connect them with the customer support team.",
+   "source": "Rule 32: \"say one short sentence of sympathy and make no persuasion attempt.\""
+  },
+  {
+   "id": "promise_per_product",
+   "what_is_counted": "Recorded promises",
+   "n": 1,
+   "n_depends_on": "",
+   "per": "product",
+   "counted_event": "tool_result",
+   "tool": "create_promise",
+   "field": "ok",
+   "value": "true",
+   "after_limit": "The recorded promise cannot be changed or cancelled in the same call. If the customer asks, say they can change it in the mobile app.",
+   "source": "Rule 36: \"One promise per product.\"; openapi /create_promise: \"One per product.\""
+  },
+  {
+   "id": "create_promise_failures",
+   "what_is_counted": "Failed create_promise calls for the confirmed promise (the first failure is followed by one more try)",
+   "n": 2,
+   "n_depends_on": "",
+   "per": "promise",
+   "counted_event": "tool_result",
+   "tool": "create_promise",
+   "field": "ok",
+   "value": "false",
+   "after_limit": "After the second failure, say you could not record it and close as no_promise / service_error.",
+   "source": "Rule 37: \"If it fails, try once more. If it fails again, say you could not record it and close as `no_promise` / `service_error`.\""
+  },
+  {
+   "id": "help_first_ask",
+   "what_is_counted": "Times the agent asks whether it can help first when the customer requests a human",
+   "n": 1,
+   "n_depends_on": "",
+   "per": "call",
+   "counted_event": "agent_action",
+   "tool": "",
+   "field": "",
+   "value": "",
+   "after_limit": "If the customer insists, call transfer_to_agent with queue general and close as transferred / human.",
+   "source": "Rule 42: \"ask once whether you can help first.\""
+  },
+  {
+   "id": "does_not_want_to_talk",
+   "what_is_counted": "Times the customer says they do not want to talk",
+   "n": 2,
+   "n_depends_on": "",
+   "per": "call",
+   "counted_event": "caller_action",
+   "tool": "",
+   "field": "",
+   "value": "",
+   "after_limit": "On the second time, close as no_promise / refused; before identity is verified, close as not_verified / declined.",
+   "source": "Rule 45: \"If the customer says twice that they do not want to talk, close as `no_promise` / `refused`. Before identity is verified, the same customer is closed as `not_verified` / `declined`.\""
+  },
+  {
+   "id": "close_call_once",
+   "what_is_counted": "close_call calls",
+   "n": 1,
+   "n_depends_on": "",
+   "per": "call",
+   "counted_event": "agent_action",
+   "tool": "",
+   "field": "",
+   "value": "",
+   "after_limit": "No further tool call; nothing is accepted after it.",
+   "source": "Rule 46: \"Every call ends with exactly one `close_call`... It is the last tool call.\"; openapi /close_call"
+  }
+ ],
+ "endings": [
+  {
+   "when": "At least one promise was recorded",
+   "tool": "close_call",
+   "fields": {
+    "outcome": "promise"
+   },
+   "say_before": "\"You will receive a text message confirming this promise.\" (rule 38), then thank the customer and say goodbye (rule 47)",
+   "source": "Rule 46 table: \"`promise` | none | at least one promise was recorded\""
+  },
+  {
+   "when": "Customer says \"I already paid\" (a payment of this past-due amount)",
+   "tool": "close_call",
+   "fields": {
+    "outcome": "paid"
+   },
+   "say_before": "Say that payments can take one business day to appear; take no promise; thank the customer and say goodbye",
+   "source": "Rule 39; rule 46 table"
+  },
+  {
+   "when": "Customer asks for a new payment plan or lower instalments; transfer_to_agent called with queue restructuring",
+   "tool": "close_call",
+   "fields": {
+    "outcome": "transferred",
+    "reason": "restructuring"
+   },
+   "say_before": "Do not describe a plan; thank the customer and say goodbye",
+   "source": "Rule 41; rule 46 table"
+  },
+  {
+   "when": "Customer asks for a human, agent asked once whether it can help first, customer insists; transfer_to_agent called with queue general (before or after verification)",
+   "tool": "close_call",
+   "fields": {
+    "outcome": "transferred",
+    "reason": "human"
+   },
+   "say_before": "Thank the customer and say goodbye",
+   "source": "Rule 42; rule 45; rule 46 table"
+  },
+  {
+   "when": "Customer mentions illness, a death in the family or job loss and accepts the offer of the customer support team; transfer_to_agent called with queue support",
+   "tool": "close_call",
+   "fields": {
+    "outcome": "transferred",
+    "reason": "support"
+   },
+   "say_before": "One short sentence of sympathy, the support offer; thank the customer and say goodbye",
+   "source": "Rule 32; rule 46 table"
+  },
+  {
+   "when": "A transfer follows a recorded promise",
+   "tool": "close_call",
+   "fields": {
+    "outcome": "transferred",
+    "reason": "that transfer's reason (restructuring, human or support)"
+   },
+   "say_before": "Thank the customer and say goodbye",
+   "source": "§12: \"If a transfer follows a recorded promise, close as `transferred` with that transfer's reason.\""
+  },
+  {
+   "when": "Persuasion attempts are used up, or the customer (after verification) says twice that they do not want to talk",
+   "tool": "close_call",
+   "fields": {
+    "outcome": "no_promise",
+    "reason": "refused"
+   },
+   "say_before": "Thank the customer and say goodbye",
+   "source": "Rules 31, 45; rule 46 table"
+  },
+  {
+   "when": "Customer mentions illness, a death in the family or job loss and declines the support transfer (and names no date or amount themselves)",
+   "tool": "close_call",
+   "fields": {
+    "outcome": "no_promise",
+    "reason": "hardship"
+   },
+   "say_before": "One short sentence of sympathy; thank the customer and say goodbye",
+   "source": "Rule 32; rule 46 table"
+  },
+  {
+   "when": "\"This debt is not mine\", \"I never had this product\", or a claim the product was closed or paid off in the past",
+   "tool": "close_call",
+   "fields": {
+    "outcome": "no_promise",
+    "reason": "dispute"
+   },
+   "say_before": "Do not argue, take no promise; thank the customer and say goodbye",
+   "source": "Rule 40; rule 46 table"
+  },
+  {
+   "when": "create_promise fails, is tried once more and fails again",
+   "tool": "close_call",
+   "fields": {
+    "outcome": "no_promise",
+    "reason": "service_error"
+   },
+   "say_before": "Say you could not record it; thank the customer and say goodbye",
+   "source": "Rule 37; rule 46 table"
+  },
+  {
+   "when": "Three wrong security answers in total",
+   "tool": "close_call",
+   "fields": {
+    "outcome": "not_verified",
+    "reason": "failed"
+   },
+   "say_before": "Do not state the debt. Tell the customer to use the mobile app or a branch; thank and say goodbye",
+   "source": "Rule 14; rule 46 table"
+  },
+  {
+   "when": "Customer still declines the security questions after one explanation (second refusal or second \"what is this about\" question), or says twice before verification that they do not want to talk",
+   "tool": "close_call",
+   "fields": {
+    "outcome": "not_verified",
+    "reason": "declined"
+   },
+   "say_before": "Thank the customer and say goodbye",
+   "source": "Rules 15, 45; rule 46 table"
+  },
+  {
+   "when": "Someone else answers and a callback inside the window was booked with schedule_callback",
+   "tool": "close_call",
+   "fields": {
+    "outcome": "not_reached",
+    "reason": "callback"
+   },
+   "say_before": "Nothing about the reason for the call; thank and say goodbye",
+   "source": "Rule 6; rule 46 table"
+  },
+  {
+   "when": "The person's offered time is outside the window and, after one ask for another time, the next one is also outside it",
+   "tool": "close_call",
+   "fields": {
+    "outcome": "not_reached",
+    "reason": "no_callback"
+   },
+   "say_before": "Do not schedule; thank and say goodbye",
+   "source": "Rule 7; rule 46 table"
+  },
+  {
+   "when": "The person says the number does not belong to the customer",
+   "tool": "close_call",
+   "fields": {
+    "outcome": "not_reached",
+    "reason": "wrong_number"
+   },
+   "say_before": "Thank and say goodbye",
+   "source": "Rule 8; rule 46 table"
+  },
+  {
+   "when": "The person says the customer has died",
+   "tool": "close_call",
+   "fields": {
+    "outcome": "not_reached",
+    "reason": "deceased"
+   },
+   "say_before": "\"I am sorry for your loss.\" Ask nothing else.",
+   "source": "Rule 9; rule 46 table"
+  },
+  {
+   "when": "Who is on the line is still unclear after the second ask",
+   "tool": "close_call",
+   "fields": {
+    "outcome": "not_reached",
+    "reason": "unclear"
+   },
+   "say_before": "Thank and say goodbye",
+   "source": "Rule 3; rule 46 table"
+  }
+ ],
+ "tool_failures": [
+  {
+   "tool": "create_promise",
+   "rule": "Say the promise is recorded only after ok: true. If it fails, try once more. If it fails again, say you could not record it and close as no_promise / service_error.",
+   "source": "Rule 37"
+  },
+  {
+   "tool": "verify_identity",
+   "rule": "An unreadable date_of_birth value is rejected with ok=false and is not counted as a wrong answer.",
+   "source": "openapi verify_identity answer description; rule 11: \"The service rejects anything it cannot read as a date.\""
+  },
+  {
+   "tool": "verify_identity",
+   "rule": "hint: \"day_month_swapped\" means day and month were given the other way round; ask the customer to say the month as a word. That retry does not count as a wrong answer.",
+   "source": "Rule 13"
+  },
+  {
+   "tool": "get_account",
+   "rule": "Refused until both questions are passed.",
+   "source": "openapi /get_account summary"
+  },
+  {
+   "tool": "all tools (verify_identity, get_account, create_promise, add_note, schedule_callback, transfer_to_agent, close_call)",
+   "rule": "`ok` is false when the action was not carried out. On HTTP 500 the service failed, nothing was recorded, and the call may be repeated.",
+   "source": "openapi responses: \"`ok` is false when the action was not carried out.\"; \"The service failed. Nothing was recorded. The call may be repeated.\""
+  },
+  {
+   "tool": "create_promise",
+   "rule": "The service does not enforce the brief: it records a promise on a holiday or past the deadline without complaint. Following the brief is the agent's job.",
+   "source": "openapi info.description"
+  },
+  {
+   "tool": "close_call",
+   "rule": "Always the last tool call. Nothing is accepted after it.",
+   "source": "openapi /close_call summary"
+  },
+  {
+   "tool": "add_note",
+   "rule": "Never used in Brief A.",
+   "source": "§12: \"Brief A never uses `add_note`.\""
+  }
+ ],
+ "replaced_rules": [],
+ "not_stated": [
+  "What to do when verify_identity, get_account, schedule_callback, transfer_to_agent or close_call fails (ok=false or HTTP 500); only create_promise has a failure rule, and the API only says a 500 call 'may be repeated' with no retry count.",
+  "Whether an HTTP 500 from create_promise counts as a 'fail' under rule 37 in the same way as ok: false.",
+  "What `verified` contains on a response that carries hint day_month_swapped or ok=false, and whether the agent should count wrong answers itself or rely on wrong_answers_left.",
+  "How many day_month_swapped retries or unreadable-date retries are allowed.",
+  "The exact wording of the opening sentence, the thank-you and goodbye, the robot/AI answer, the sympathy sentence and the security-question explanation.",
+  "Freya Bank's customer service number for the 'Is this a scam?' answer (rule 43).",
+  "What to do if get_account returns more than one product, or no product (the response is an array; the brief covers one product).",
+  "What to do if days_late is outside 1 to 45.",
+  "Currency and how amounts are to be spoken.",
+  "What to do when the person who answers gives no time at all, or does not know when the customer can be reached.",
+  "Time zone of `now` and of the callback window.",
+  "How 'Can you make this payment today?' works when today is not a business day (rule 19 requires a business day).",
+  "What 'the last business day of this week' is when the call is made on a weekend, or when that day has already passed.",
+  "Whether rules 39, 40 and 41 apply before identity is verified (only rules 42 and 45 state pre-verification behaviour).",
+  "The outcome for silence, voicemail, a dropped call or a caller who hangs up.",
+  "What to close as if transfer_to_agent fails.",
+  "Whether refusing the next business day offered under rule 20 is a flat refusal.",
+  "Whether the customer saying the full amount is too much (rule 26) itself uses a persuasion attempt.",
+  "What the agent says or does after a promise is recorded if the customer raises nothing else, beyond the text-message sentence and the goodbye.",
+  "The `reason` value to send for outcomes promise and paid (the table says none; the API marks reason as not required for them)."
+ ]
+}
