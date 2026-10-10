@@ -152,10 +152,12 @@ def validate(spec, tool_api):
     return problems
 
 
-async def _ask(prompt, model, on_message=None):
+async def _ask(prompt, model, on_message=None, cwd=None):
     from claude_agent_sdk import ClaudeAgentOptions, ResultMessage, query
-    options = ClaudeAgentOptions(cwd=ROOT, model=model, allowed_tools=["Read"], permission_mode="dontAsk",
-                                 setting_sources=["project", "local"], max_turns=20)
+    # Inside a build workspace the model reads only that folder (its settings file says so).
+    options = ClaudeAgentOptions(cwd=cwd or ROOT, model=model, allowed_tools=["Read"], permission_mode="dontAsk",
+                                 disallowed_tools=["Bash", "PowerShell", "WebFetch", "WebSearch", "Agent", "Task"],
+                                 setting_sources=["project"] if cwd else ["project", "local"], max_turns=20)
     answer = ""
     async for message in query(prompt=prompt, options=options):
         if on_message:
@@ -165,15 +167,18 @@ async def _ask(prompt, model, on_message=None):
     return answer
 
 
-def extract(brief_paths, tool_api_path, model=DEFAULT_MODEL, trace=None, on_message=None):
-    """Run the model, check its answer, return the spec. Raises ValueError with the problems found."""
-    with open(tool_api_path, encoding="utf-8") as f:
+def extract(brief_paths, tool_api_path, model=DEFAULT_MODEL, trace=None, on_message=None, cwd=None):
+    """Run the model, check its answer, return the spec. Raises ValueError with the problems found.
+
+    With `cwd` (a build workspace) the paths are relative to it and the model works inside it.
+    """
+    shown = (lambda p: p.replace("\\", "/")) if cwd else os.path.abspath
+    with open(os.path.join(cwd, tool_api_path) if cwd else tool_api_path, encoding="utf-8") as f:
         tool_api = json.load(f)
-    prompt = PROMPT.format(briefs="\n".join("- " + os.path.abspath(p) for p in brief_paths),
-                           tools="- " + os.path.abspath(tool_api_path))
+    prompt = PROMPT.format(briefs="\n".join("- " + shown(p) for p in brief_paths), tools="- " + shown(tool_api_path))
     if trace:
         trace.model_call(model, "read the brief files and write the structured rule list (spec)")
-    spec = parse_json(asyncio.run(_ask(prompt, model, on_message)))
+    spec = parse_json(asyncio.run(_ask(prompt, model, on_message, cwd)))
     problems = validate(spec, tool_api)
     if problems:
         raise ValueError("the spec does not fit the tool API file:\n- " + "\n- ".join(problems))

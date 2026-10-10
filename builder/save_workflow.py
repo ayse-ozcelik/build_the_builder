@@ -55,22 +55,34 @@ def problems_in(workflow):
     return found
 
 
+def save(workflow):
+    """Check, validate, save and publish. Returns {"workflow_id", "agent_id", "version"}.
+
+    Raises ValueError for a problem in the workflow, RuntimeError when the platform refuses it.
+    """
+    found = problems_in(workflow)
+    if found:
+        raise ValueError("NOT SAVED, fix these first:\n- " + "\n- ".join(found))
+    with open(STATE_FILE, encoding="utf-8") as f:
+        if SLOT not in json.load(f):
+            raise ValueError("NOT SAVED: slot %s is missing from %s; refusing to create a new workflow" % (SLOT, STATE_FILE))
+    if KIT not in sys.path:
+        sys.path.insert(0, KIT)
+    import freya
+    freya.validate_workflow(SLOT, workflow)
+    saved = freya.save_workflow(SLOT, workflow, state_file=STATE_FILE)
+    return {"workflow_id": saved["workflow_id"], "agent_id": saved["agent_id"], "version": saved.get("version")}
+
+
 def main(argv):
     if len(argv) != 1:
         sys.exit(__doc__)
     with open(argv[0], encoding="utf-8") as f:
         workflow = json.load(f)
-    found = problems_in(workflow)
-    if found:
-        sys.exit("NOT SAVED, fix these first:\n- " + "\n- ".join(found))
-    with open(STATE_FILE, encoding="utf-8") as f:
-        if SLOT not in json.load(f):
-            sys.exit("NOT SAVED: slot %s is missing from %s; refusing to create a new workflow" % (SLOT, STATE_FILE))
-    sys.path.insert(0, KIT)
-    import freya
-    freya.validate_workflow(SLOT, workflow)
-    saved = freya.save_workflow(SLOT, workflow, state_file=STATE_FILE)
-    print(json.dumps({"workflow_id": saved["workflow_id"], "agent_id": saved["agent_id"], "version": saved.get("version")}))
+    try:
+        print(json.dumps(save(workflow)))
+    except ValueError as error:
+        sys.exit(str(error))
 
 
 if __name__ == "__main__":

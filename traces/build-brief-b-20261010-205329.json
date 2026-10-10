@@ -1,0 +1,36 @@
+{
+  "started_at": "2026-10-10T17:53:29+00:00",
+  "ended_at": null,
+  "duration_seconds": null,
+  "status": "running",
+  "brief": "kit/briefs/brief-a.md, kit/briefs/brief-b.md",
+  "tool_api": "kit/tools/openapi.json",
+  "model_calls": [
+    {
+      "at": "2026-10-10T17:53:29+00:00",
+      "model": "claude-opus-5-5",
+      "purpose": "read the brief files and write the structured rule list (spec)"
+    },
+    {
+      "at": "2026-10-10T17:56:10+00:00",
+      "model": "claude-opus-5-5",
+      "purpose": "write the workflow script from spec and tools"
+    }
+  ],
+  "workflows": [],
+  "self_tests": [],
+  "notes": [
+    {
+      "at": "2026-10-10T17:53:29+00:00",
+      "message": "workspace: a temporary folder holding only .claude, briefs, builder, feedback, kit, out, tool_api"
+    },
+    {
+      "at": "2026-10-10T17:53:29+00:00",
+      "message": "tools_gen: 7 tools (verify_identity, get_account, create_promise, add_note, schedule_callback, transfer_to_agent, close_call)"
+    },
+    {
+      "at": "2026-10-10T17:56:10+00:00",
+      "message": "extract: 11 stages, 17 limits (identity_question_asks, callback_other_time_ask, wrong_security_answers, security_question_explanation, exact_day_ask, floor_offer_full_too_much, floor_offer_below_floor, persuasion_attempts, sympathy_sentence, pay_today_ask, product_statement_sentences, confirmation_question, promise_per_product, create_promise_failures, help_first_ask, does_not_want_to_talk, close_call_once), 17 endings"
+    }
+  ]
+}
