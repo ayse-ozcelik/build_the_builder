@@ -1,0 +1,23 @@
+# Secrets: API keys live in .env and must never be committed
+.env
+.env.*
+!env.example
+!.env.example
+env.sh
+
+# Claude Code personal settings
+.claude/settings.local.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Editor
+.idea/
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store

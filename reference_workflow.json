@@ -1,0 +1,646 @@
+{
+  "initial_node": "identity",
+  "nodes": {
+    "identity": {
+      "name": "identity",
+      "node_type": "conversation",
+      "role_message": "",
+      "task_message": "You are the digital assistant of Freya Bank. Your only job here is to verify the customer's identity. Speak English, one or two short sentences per turn.\nOnce the customer confirms who they are, ask for their date of birth, then the last four digits of their phone number, and call verify_identity for each answer.\nYou do not know why the bank is calling. If asked, say you can explain after the security check.\nIf the identity check fails, say goodbye, ending with \"Have a good day.\"",
+      "on_enter": {
+        "type": "tts",
+        "text": "Hello, this is the digital assistant of Freya Bank. Am I speaking with {{title}} {{last_name}}?"
+      },
+      "on_enter_first_entry_only": false,
+      "passthrough": false,
+      "interruptible": false,
+      "return_to_previous_on_interrupt": false,
+      "disable_inactivity_monitor": false,
+      "max_node_turns": 80,
+      "max_turn_transition": null,
+      "truncation_strategy": "keep_all",
+      "truncation_window_size": 10,
+      "passthrough_default_transition": null,
+      "position": {
+        "x": 498.0464451619148,
+        "y": -590.6037491300582
+      },
+      "assertions": [],
+      "extraction_schema": [],
+      "response_mapping": [],
+      "suppress_tool_results": false,
+      "tools": [
+        {
+          "type": "function",
+          "function": {
+            "name": "verify_identity",
+            "handler": "__function__:api_call",
+            "description": "Check one security answer. Call it once for each answer the customer gives.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/verify_identity"
+                },
+                "body": {
+                  "type": "object",
+                  "required": [
+                    "field",
+                    "answer"
+                  ],
+                  "properties": {
+                    "field": {
+                      "enum": [
+                        "date_of_birth",
+                        "phone_last4"
+                      ],
+                      "type": "string",
+                      "default": "{{field}}",
+                      "description": "Which answer this is."
+                    },
+                    "answer": {
+                      "type": "string",
+                      "default": "{{answer}}",
+                      "description": "date_of_birth as YYYY-MM-DD, phone_last4 as four digits."
+                    },
+                    "customer_id": {
+                      "type": "string",
+                      "default": "{{customer_id}}"
+                    }
+                  }
+                },
+                "method": {
+                  "type": "string",
+                  "default": "POST"
+                },
+                "headers": {
+                  "type": "object",
+                  "properties": {
+                    "Content-Type": {
+                      "type": "string",
+                      "default": "application/json"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "config": {
+            "timeoutMs": 12000,
+            "maxRetries": 0
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "end_call",
+            "handler": "__function__:end_call",
+            "description": "Ends the call. You normally do NOT call this: the phrase \"Have a good day.\" ends the call by itself. Call it without any text only if the customer answers after your goodbye.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "message_mode": {
+                  "type": "string",
+                  "default": "none"
+                },
+                "interruptible": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "trigger_pattern": {
+                  "type": "string",
+                  "default": "Have a good day|have a good day"
+                },
+                "trigger_timeout": {
+                  "type": "number",
+                  "default": 3
+                },
+                "trigger_pattern_both": {
+                  "type": "string",
+                  "default": "goodbye|bye|have a good day|you too|thank you|thanks|take care"
+                }
+              }
+            }
+          },
+          "config": {
+            "timeoutMs": 10000
+          }
+        }
+      ],
+      "pre_actions": [],
+      "transitions": [
+        {
+          "target_node": "collection",
+          "description": "both security answers verified",
+          "condition": {
+            "logic": "or",
+            "conditions": [
+              {
+                "variable": "verify_identity_response.data.all_verified",
+                "operator": "equals",
+                "operand": "true",
+                "mode": "exact"
+              },
+              {
+                "variable": "verify_identity_response.data.all_verified",
+                "operator": "equals",
+                "operand": "True",
+                "mode": "exact"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "collection": {
+      "name": "collection",
+      "node_type": "conversation",
+      "role_message": "",
+      "task_message": "You are the digital assistant of Freya Bank on a collection call. The customer is verified. Speak English, one or two short sentences per turn.\nFirst call get_account, then tell the customer the past due amount and ask when they can pay it.\nGet a payment date, read the amount and the date back, and call create_promise after the customer says yes.\nWhen the promise is recorded or the customer will not pay, say goodbye, ending with \"Have a good day.\"\nNow: {{now}}.",
+      "on_enter": {
+        "type": "tts",
+        "text": "Thank you, that's verified. I'm calling about your Freya Bank account, do you have a minute?"
+      },
+      "on_enter_first_entry_only": false,
+      "passthrough": false,
+      "interruptible": true,
+      "return_to_previous_on_interrupt": false,
+      "disable_inactivity_monitor": false,
+      "max_node_turns": 80,
+      "max_turn_transition": null,
+      "truncation_strategy": "keep_all",
+      "truncation_window_size": 10,
+      "passthrough_default_transition": null,
+      "position": {
+        "x": 500,
+        "y": 0
+      },
+      "assertions": [],
+      "extraction_schema": [],
+      "response_mapping": [],
+      "suppress_tool_results": false,
+      "tools": [
+        {
+          "type": "function",
+          "function": {
+            "name": "get_account",
+            "handler": "__function__:api_call",
+            "description": "The customer's late products. Call it once, before you say anything about the account.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/get_account"
+                },
+                "body": {
+                  "type": "object",
+                  "required": [],
+                  "properties": {
+                    "customer_id": {
+                      "type": "string",
+                      "default": "{{customer_id}}"
+                    }
+                  }
+                },
+                "method": {
+                  "type": "string",
+                  "default": "POST"
+                },
+                "headers": {
+                  "type": "object",
+                  "properties": {
+                    "Content-Type": {
+                      "type": "string",
+                      "default": "application/json"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "config": {
+            "timeoutMs": 12000,
+            "maxRetries": 0
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "create_promise",
+            "handler": "__function__:api_call",
+            "description": "Record a payment promise. Call it only after the customer said yes to the read-back of amount and date.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/create_promise"
+                },
+                "body": {
+                  "type": "object",
+                  "required": [
+                    "product_id",
+                    "amount",
+                    "date"
+                  ],
+                  "properties": {
+                    "date": {
+                      "type": "string",
+                      "default": "{{date}}",
+                      "description": "Payment date as YYYY-MM-DD."
+                    },
+                    "amount": {
+                      "type": "number",
+                      "default": "{{amount}}",
+                      "description": "Amount the customer will pay."
+                    },
+                    "product_id": {
+                      "type": "string",
+                      "default": "{{product_id}}",
+                      "description": "product_id from the account result, for example p1."
+                    },
+                    "customer_id": {
+                      "type": "string",
+                      "default": "{{customer_id}}"
+                    }
+                  }
+                },
+                "method": {
+                  "type": "string",
+                  "default": "POST"
+                },
+                "headers": {
+                  "type": "object",
+                  "properties": {
+                    "Content-Type": {
+                      "type": "string",
+                      "default": "application/json"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "config": {
+            "timeoutMs": 12000,
+            "maxRetries": 0
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "end_call",
+            "handler": "__function__:end_call",
+            "description": "Ends the call. You normally do NOT call this: the phrase \"Have a good day.\" ends the call by itself. Call it without any text only if the customer answers after your goodbye.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "message_mode": {
+                  "type": "string",
+                  "default": "none"
+                },
+                "interruptible": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "trigger_pattern": {
+                  "type": "string",
+                  "default": "Have a good day|have a good day"
+                },
+                "trigger_timeout": {
+                  "type": "number",
+                  "default": 3
+                },
+                "trigger_pattern_both": {
+                  "type": "string",
+                  "default": "goodbye|bye|have a good day|you too|thank you|thanks|take care"
+                }
+              }
+            }
+          },
+          "config": {
+            "timeoutMs": 10000
+          }
+        }
+      ],
+      "pre_actions": [],
+      "transitions": []
+    }
+  },
+  "global_nodes": {},
+  "system_prompt": "",
+  "test_variables": {
+    "now": "2026-10-14T11:00",
+    "title": "Mr",
+    "last_name": "Reyes",
+    "first_name": "Daniel",
+    "customer_id": "c_b3b3dc9c-ee7",
+    "test_caller_phone_last4": "4471",
+    "test_caller_date_of_birth": "1988-03-14"
+  },
+  "agent_config": {
+    "llmConfig": {
+      "provider": "experimental-5",
+      "model": "experimental-5",
+      "baseUrl": null,
+      "apiKey": null,
+      "clientType": null,
+      "systemPrompt": "You are a helpful assistant. Your role is to help users with their tasks. Always be friendly and professional. You can use `end_call` tool after you say goodbye to customer to hang up if call about to finish.",
+      "firstMessage": "Hello, this is the digital assistant of Freya Bank. Am I speaking with {{title}} {{last_name}}?",
+      "firstMessageMode": "assistant-speaks-first",
+      "disableInterruptionsDuringFirstMessage": true,
+      "maxTokens": 1000,
+      "temperature": 0.7,
+      "tools": [
+        {
+          "type": "function",
+          "function": {
+            "name": "end_call",
+            "handler": "__function__:end_call",
+            "description": "This is used to technically terminate the call after all the customer's questions have been answered and necessary information has been provided.\n- It should only be triggered SILENTLY in the background after the customer-related workflow is complete; never mention this tool or its name to the customer.",
+            "parameters": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        }
+      ],
+      "additionalSettings": {}
+    },
+    "ttsConfig": {
+      "provider": "Freya",
+      "model": "freya-tts",
+      "voiceId": "leyla",
+      "language": "tr",
+      "baseUrl": null,
+      "apiKey": null,
+      "additionalSettings": {
+        "speed": 1,
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "startSpeakingPlan": {
+        "waitSeconds": 0.5,
+        "backgroundNoisePhrases": [
+          "arka plan sesi",
+          "klavye sesi",
+          "klavye sesleri",
+          "öksürük",
+          "öksürük sesi",
+          "video sesi",
+          "video kaydı",
+          "çılgın ses",
+          "çılgın kahkaha",
+          "gülüş",
+          "ses ses ses",
+          "çık çık çık",
+          "sim",
+          "sim izle"
+        ]
+      },
+      "stopSpeakingPlan": {
+        "numberOfWords": 2,
+        "voiceSeconds": 0.1,
+        "backOffSeconds": 0.4,
+        "acknowledgementPhrases": [
+          "hı",
+          "evet",
+          "tamam",
+          "aynen",
+          "okey",
+          "okay",
+          "anladım",
+          "hee",
+          "ee",
+          "eee",
+          "ıı",
+          "ııı",
+          "ha",
+          "hı-hı",
+          "ha-ha",
+          "tabi",
+          "tabii",
+          "peki",
+          "tamamdır",
+          "hı hı",
+          "hım",
+          "hımm",
+          "hıhı",
+          "haha",
+          "he",
+          "hahaha"
+        ],
+        "interruptionPhrases": [
+          "dur",
+          "bekle",
+          "bir dakika",
+          "bir saniye",
+          "dursana",
+          "bekle bi",
+          "anlamadım",
+          "ne diyon",
+          "ne diyorsun",
+          "ne dedin",
+          "yeter"
+        ]
+      },
+      "textSubstitutions": [
+        {
+          "pattern": "@",
+          "replacement": "at"
+        },
+        {
+          "pattern": "\\$",
+          "replacement": "dollars"
+        },
+        {
+          "pattern": "%",
+          "replacement": "percent"
+        },
+        {
+          "pattern": "&",
+          "replacement": "and"
+        },
+        {
+          "pattern": "\\+",
+          "replacement": "plus"
+        },
+        {
+          "pattern": "turkishairlines",
+          "replacement": "turkish airlines",
+          "caseInsensitive": true
+        }
+      ],
+      "speechNormalization": {
+        "emails": true,
+        "urls": true,
+        "emojis": true,
+        "phoneNumbers": false,
+        "identityNumbers": false,
+        "generalNumbers": false,
+        "names": false
+      }
+    },
+    "sttConfig": {
+      "provider": "Freya",
+      "model": "freya-stt",
+      "language": "tr",
+      "baseUrl": null,
+      "apiKey": null,
+      "additionalSettings": {
+        "diarize": false,
+        "punctuate": true,
+        "streaming": true,
+        "aicEnabled": false,
+        "krispEnabled": false,
+        "smartTurnEnabled": true
+      },
+      "confidenceReask": {
+        "enabled": false,
+        "threshold": 0.3,
+        "reduction": "min",
+        "disableOnDigitNodes": true,
+        "reaskMode": "phrase",
+        "reaskPhrases": null,
+        "maxConsecutiveReasks": 2
+      }
+    },
+    "complianceConfig": {
+      "pciDss": false,
+      "mifidIi": false,
+      "euAiAct": false,
+      "soc2": false
+    },
+    "callTimeoutSettings": {
+      "silenceTimeout": 10,
+      "maximumDuration": 600,
+      "checkInMessage": null,
+      "closureMessage": null,
+      "maxRetries": 2,
+      "silenceTimeoutPrompt": null,
+      "maxDurationEndCall": {
+        "messageMode": "llm",
+        "spokenMessage": null,
+        "llmPrompt": null,
+        "interruptible": false,
+        "triggerTimeout": null
+      },
+      "dynamicWait": null
+    },
+    "voicemailDetection": {
+      "enabled": false,
+      "messageMode": "none",
+      "staticMessage": null,
+      "voicemailResponseDelay": 2
+    },
+    "dtmfConfig": {
+      "enabled": false,
+      "timeout": 2,
+      "terminationDigit": "#",
+      "prefix": "DTMF: "
+    },
+    "postConversationAnalysis": {
+      "summaryPrompt": null,
+      "autoDetectProblems": false,
+      "problemDetectionPrompt": null,
+      "problemDetectionInstructions": null,
+      "analysisModel": null
+    },
+    "privacyConfig": {
+      "enableRecording": true,
+      "getRecordingConsent": false,
+      "recordingConsentText": null
+    },
+    "piiRedactionConfig": {
+      "enabled": false,
+      "maskEmail": true,
+      "maskPhone": true,
+      "maskPaymentCard": true,
+      "maskNationalId": true,
+      "maskIban": true,
+      "customRules": []
+    },
+    "routingLlmConfig": null,
+    "extractionLlmConfig": null,
+    "backgroundSoundUrl": null,
+    "backgroundSoundVolume": null,
+    "syncSource": null
+  },
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "close_call",
+        "handler": "__function__:api_call",
+        "description": "Record how the call ended, from the conversation.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/close_call"
+            },
+            "method": {
+              "type": "string",
+              "enum": [
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE"
+              ],
+              "default": "POST"
+            },
+            "headers": {
+              "type": "object",
+              "properties": {
+                "Content-Type": {
+                  "type": "string",
+                  "default": "application/json"
+                }
+              }
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "reason": {
+                  "type": "string",
+                  "description": "Leave out for promise. no_promise: refused. not_verified: failed (wrong answers) or declined (would not answer). not_reached: wrong_number or unclear.",
+                  "default": "{{reason}}"
+                },
+                "outcome": {
+                  "type": "string",
+                  "description": "promise: a payment promise was recorded. no_promise: verified customer, no promise. not_verified: the identity check did not pass. not_reached: the right person was not on the line.",
+                  "default": "{{outcome}}",
+                  "enum": [
+                    "promise",
+                    "no_promise",
+                    "not_verified",
+                    "not_reached"
+                  ]
+                },
+                "customer_id": {
+                  "type": "string",
+                  "default": "{{customer_id}}"
+                }
+              },
+              "required": [
+                "outcome"
+              ]
+            }
+          }
+        }
+      },
+      "config": {
+        "alwaysRunsAt": [
+          "end_of_call"
+        ],
+        "timeoutMs": 12000,
+        "maxRetries": 0
+      },
+      "response_mapping": [],
+      "pre_process_code": "try:\n    b = config.get('body')\n    if isinstance(b, dict) and b.get('outcome') in ('promise', 'paid'):\n        b.pop('reason', None)\nexcept Exception:\n    pass\n"
+    }
+  ]
+}

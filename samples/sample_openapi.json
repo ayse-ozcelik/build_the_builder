@@ -1,0 +1,131 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Freya Bank tool API (SAMPLE, rebuilt by hand from reference_workflow.json, not the real kit file)",
+    "version": "0.0.1"
+  },
+  "servers": [
+    {"url": "https://freya-bank-mock.freyavoice.workers.dev/v1"}
+  ],
+  "paths": {
+    "/verify_identity": {
+      "post": {
+        "operationId": "verify_identity",
+        "description": "Check one security answer. Call it once for each answer the customer gives.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["customer_id", "field", "answer"],
+                "properties": {
+                  "customer_id": {"type": "string"},
+                  "field": {
+                    "type": "string",
+                    "enum": ["date_of_birth", "phone_last4"],
+                    "description": "Which answer this is."
+                  },
+                  "answer": {
+                    "type": "string",
+                    "description": "date_of_birth as YYYY-MM-DD, phone_last4 as four digits."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "OK"}}
+      }
+    },
+    "/get_account": {
+      "post": {
+        "operationId": "get_account",
+        "description": "The customer's late products. Call it once, before you say anything about the account.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["customer_id"],
+                "properties": {
+                  "customer_id": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "OK"}}
+      }
+    },
+    "/create_promise": {
+      "post": {
+        "operationId": "create_promise",
+        "description": "Record a payment promise. Call it only after the customer said yes to the read-back of amount and date.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/CreatePromiseRequest"}
+            }
+          }
+        },
+        "responses": {"200": {"description": "OK"}}
+      }
+    },
+    "/close_call": {
+      "post": {
+        "operationId": "close_call",
+        "description": "Record how the call ended, from the conversation.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["customer_id", "outcome"],
+                "properties": {
+                  "customer_id": {"type": "string"},
+                  "outcome": {
+                    "type": "string",
+                    "enum": ["promise", "no_promise", "not_verified", "not_reached"],
+                    "description": "promise: a payment promise was recorded. no_promise: verified customer, no promise. not_verified: the identity check did not pass. not_reached: the right person was not on the line."
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "Leave out for promise. no_promise: refused. not_verified: failed (wrong answers) or declined (would not answer). not_reached: wrong_number or unclear."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "OK"}}
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreatePromiseRequest": {
+        "type": "object",
+        "required": ["customer_id", "product_id", "amount", "date"],
+        "properties": {
+          "customer_id": {"type": "string"},
+          "product_id": {
+            "type": "string",
+            "description": "product_id from the account result, for example p1."
+          },
+          "amount": {
+            "type": "number",
+            "description": "Amount the customer will pay."
+          },
+          "date": {
+            "type": "string",
+            "description": "Payment date as YYYY-MM-DD."
+          }
+        }
+      }
+    }
+  }
+}
