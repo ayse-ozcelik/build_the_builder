@@ -6,5 +6,9 @@
  "brief-a": {
   "workflow_id": "0646772d-dd60-4e09-a7e4-f0c64c405427",
   "agent_id": "0ddc78ce-44d4-4c71-9628-829e5302bade"
+ },
+ "bank-collections": {
+  "workflow_id": "fa765caf-987d-4d19-8353-4611cbb0bdd4",
+  "agent_id": "dadb25c6-fec0-41b0-8874-b1644dda388a"
  }
 }

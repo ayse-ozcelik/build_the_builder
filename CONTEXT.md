@@ -60,7 +60,9 @@ The agent may call only the bank's tool API. Code steps and hooks inside the wor
 After the final briefs open (Sun 17:00 UTC = 20:00 Istanbul, event page): only bug fixes. Nothing from a final brief may be written into the builder (no rule, value, name, holiday date, outcome name). Fixing a crash on an unexpected table is fine. Do not paste final briefs into a coding session to tune the builder.
 Run the builder once per final brief. You may run it more than once and submit the agent of one run, with that run's trace.
 Builder run ≤ 30 min per brief, including its own tests.
-Workspace holds 200 workflows (not 10). Still update in place: use freya.save_workflow(slot, workflow).
+Workflow limit: the kit README says 200 per workspace, but I (the user) see a limit of 10. Treat it as 10. Never create a new workflow for an experiment.
+All further work goes into ONE workflow, named "bank collections" (id fa765caf-987d-4d19-8353-4611cbb0bdd4, agent dadb25c6-fec0-41b0-8874-b1644dda388a). Update it in place with freya.save_workflow("bank-collections", workflow), run from kit/ (the slot is in kit/.freya-agents.json).
+Other workflows in the workspace (as of 2026-10-10): "Freya Bank Collections Base (2 nodes)" (came with the workspace), "base ..." (kit's example agent, 0/10), "brief-a ..." (agent made by the kit's example builder, 8/10 with --reps 3; reference, do not overwrite).
 One simulation at a time per workspace. A ten-customer run takes 3–11 min; a second run_cases.py waits.
 Trace per run: start and end time, each model call (model + one-line purpose), what it created on Freya, any test it ran on its own agent. Plain text, no fixed format. One trace per final brief.
 Submit per final brief: exported workflow via freya.export_workflow(workflow_id, "<brief>.workflow.json") (organizers load that file into their own workspace, so the export is what is scored), the trace, the code (repo + commit). Deadline Sun 20:00 UTC = 23:00 Istanbul (event page).
