@@ -176,7 +176,8 @@
  },
  "notes": {
   "used": true,
-  "when": "For each product without a promise, also when no product gets a promise, call add_note with that product_id and a reason: refused, hardship, dispute, paid or service_error. If one create_promise fails twice, call add_note with reason service_error for the failed product. On any transfer (restructuring, support, human) add no notes at all, before or after it."
+  "when": "For each product without a promise, also when no product gets a promise, call add_note with that product_id and a reason: refused, hardship, dispute, paid or service_error. If one create_promise fails twice, call add_note with reason service_error for the failed product. On any transfer (restructuring, support, human) add no notes at all, before or after it.",
+  "every_product_without_promise": true
  },
  "endings": [
   {

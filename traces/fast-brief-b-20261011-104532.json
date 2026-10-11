@@ -1,0 +1,105 @@
+{
+  "started_at": "2026-10-11T07:45:32+00:00",
+  "ended_at": "2026-10-11T07:53:06+00:00",
+  "duration_seconds": 454.2,
+  "status": "ok",
+  "brief": "kit/briefs/brief-a.md, kit/briefs/brief-b.md",
+  "tool_api": "kit/tools/openapi.json",
+  "model_calls": [],
+  "workflows": [
+    {
+      "at": "2026-10-11T07:45:34+00:00",
+      "workflow_id": "fa765caf-987d-4d19-8353-4611cbb0bdd4",
+      "agent_id": "dadb25c6-fec0-41b0-8874-b1644dda388a",
+      "step_count": 14,
+      "tool_count": 7
+    }
+  ],
+  "self_tests": [
+    {
+      "at": "2026-10-11T07:53:06+00:00",
+      "name": "practice customers (B, 3 run(s) each)",
+      "passed": false,
+      "detail": "2 of 3 passed; failed: PUB-12"
+    }
+  ],
+  "notes": [
+    {
+      "at": "2026-10-11T07:45:32+00:00",
+      "message": "rules reused from build/fast-brief-b/rules.json"
+    },
+    {
+      "at": "2026-10-11T07:45:32+00:00",
+      "message": "rules: 62 rules (29 fit no slot and go to the prompts only), 20 endings, 2 bands"
+    },
+    {
+      "at": "2026-10-11T07:45:32+00:00",
+      "message": "1 rules form took 0 s"
+    },
+    {
+      "at": "2026-10-11T07:45:32+00:00",
+      "message": "step texts: fixed instructions plus the brief's rules word for word (no model call)"
+    },
+    {
+      "at": "2026-10-11T07:45:32+00:00",
+      "message": "2 step texts took 0 s"
+    },
+    {
+      "at": "2026-10-11T07:45:32+00:00",
+      "message": "limit identity.wrong_limit = 3: route on the bank's own count (wrong_answers_left) (identity)"
+    },
+    {
+      "at": "2026-10-11T07:45:32+00:00",
+      "message": "limit promise.failure_limit = 2: counted per product in the tool's hook; one product: route to the closing step (collect, collect_after_offer)"
+    },
+    {
+      "at": "2026-10-11T07:45:32+00:00",
+      "message": "limit every product gets a promise or a note = 1: list kept in the tool hooks; route when none is open; no closing tool in the negotiation (collect, collect_after_offer)"
+    },
+    {
+      "at": "2026-10-11T07:45:32+00:00",
+      "message": "limit floor_offer.limit = 1: counted_step (fixed line, said on entry) (floor_gate)"
+    },
+    {
+      "at": "2026-10-11T07:45:32+00:00",
+      "message": "limit opening.confirm_asks = 2: prompt_only (who)"
+    },
+    {
+      "at": "2026-10-11T07:45:32+00:00",
+      "message": "limit callback.other_time_asks = 1: prompt_only (who)"
+    },
+    {
+      "at": "2026-10-11T07:45:32+00:00",
+      "message": "limit attempts (band early) = 1: prompt_only, with the allowed number and each proposal computed in code (collect)"
+    },
+    {
+      "at": "2026-10-11T07:45:32+00:00",
+      "message": "limit attempts (band late) = 2: prompt_only, with the allowed number and each proposal computed in code (collect)"
+    },
+    {
+      "at": "2026-10-11T07:45:32+00:00",
+      "message": "3 compile took 0 s"
+    },
+    {
+      "at": "2026-10-11T07:45:34+00:00",
+      "message": "4 save took 2 s"
+    },
+    {
+      "at": "2026-10-11T07:45:34+00:00",
+      "message": "build time without practice customers: 2 s"
+    },
+    {
+      "at": "2026-10-11T07:53:06+00:00",
+      "message": "5 practice customers took 452 s"
+    },
+    {
+      "at": "2026-10-11T07:53:06+00:00",
+      "message": "exported to submission/fast-brief-b.workflow.json"
+    }
+  ],
+  "summary": {
+    "model_call_count": 0,
+    "self_tests_passed": 0,
+    "self_tests_total": 1
+  }
+}

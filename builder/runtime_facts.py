@@ -245,11 +245,17 @@ def _run(vars, params_json):
                  + ', both included, can be recorded. Nothing below ' + fm(floor) + ' and nothing above ' + fm(full) + '.')
         A.append('  DEADLINE (latest date that can be recorded): ' + both(dead) + '.')
         A.append('  PERSUASION ATTEMPTS ALLOWED: ' + str(tries) + '.')
+        avail, said, stopped = [], [], False
         for pr in proposals:
             k = int(pr.get('attempt') or 0)
             scope = pr.get('bands') or []
             if k > tries or (scope and band.get('name') not in scope):
-                A.append('  Attempt ' + str(k) + ' proposal: NOT available for this product.')
+                if len(prods) == 1:
+                    A.append('  Attempt ' + str(k) + ' proposal: NOT available for this product.')
+                elif not stopped:
+                    # several products: the stop stands in the list itself, where the next proposal would be
+                    A.append('  After that: NOTHING. No further proposal for this product and no FLOOR offer. It is refused.')
+                    stopped = True
                 continue
             d = resolve(pr.get('date'), today, dead)
             if d > dead:
@@ -259,10 +265,22 @@ def _run(vars, params_json):
             if how == 'full_or_floor':
                 amount += ', or the FLOOR amount ' + fm(floor) + ' if the customer already said the full amount is too much'
             A.append('  Attempt ' + str(k) + ' proposal: payment on ' + both(d) + ' of ' + amount + '.')
+            avail.append(k)
+            said.append('Attempt ' + str(k) + ': payment on ' + both(d) + ' of ' + amount)
         if len(prods) > 1:
-            A.append('  These ' + str(tries) + ' attempt(s) are ALL the proposals you may make for this product after a refusal.'
-                     ' When they are used up and the customer still refuses, propose nothing more for it, not the FLOOR'
-                     ' either, and treat the product as refused.')
+            if not stopped:
+                A.append('  After that: NOTHING. No further proposal for this product and no FLOOR offer. It is refused.')
+            steps =['refusal ' + str(i + 1) + ' -> make the Attempt ' + str(k) + ' proposal' for i, k in enumerate(avail)]
+            steps.append('refusal ' + str(len(avail) + 1) + ' -> STOP: propose nothing more for this product, not the FLOOR'
+                         ' either; it is refused')
+            A.append('  IF THE CUSTOMER REFUSES THIS PRODUCT (and no rule says to make no attempt): ' + '. '.join(steps)
+                     + '. A refusal the customer already gave for this product earlier in the call counts as refusal 1.')
+            # the tool hooks repeat this right before the product's turn comes
+            vars['script_' + str(p.get(idf))] = (
+                'NEXT PRODUCT: ' + name + ' (' + str(p.get(idf)) + '). After a refusal you may make exactly ' + str(len(avail))
+                + ' proposal(s) for it, no more: ' + '; then '.join(said) + '. If the customer refuses after that, it is refused:'
+                ' propose nothing else for it and act on the refusal at once. The FLOOR offer is only for a customer who says'
+                ' the amount is too much. "No" or "I am not paying" is a refusal, never a reason to offer the FLOOR.')
         values = dict(p)
         values.update(name=name, amount=fm(full), floor=fm(floor), lateness=latetext)
         S.append(fill(P.get('product_sentence'), values))

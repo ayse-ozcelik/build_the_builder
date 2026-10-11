@@ -14,7 +14,7 @@
  {
   "limit": "every product gets a promise or a note",
   "n": 1,
-  "how": "list kept in the tool hooks; route when none is open",
+  "how": "list kept in the tool hooks; route when none is open; no closing tool in the negotiation",
   "where": "collect, collect_after_offer"
  },
  {

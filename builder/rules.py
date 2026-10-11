@@ -85,7 +85,7 @@ SHAPE = r"""
   "ending": {"request field of close_call": "value"}
  },
 
- "notes": {"used": false, "when": "empty, or when the brief requires add_note"},
+ "notes": {"used": false, "every_product_without_promise": false, "when": "empty, or when the brief requires add_note"},
 
  "endings": [{"when": "the situation", "fields": {"request field of close_call": "value"}, "rule": "rule number"}],
 
@@ -116,6 +116,8 @@ How to fill it:
   business_days_after_today and calendar_days_after_today also take "n". "deadline" means the deadline of the product's band.
   last_business_day_of_week means this week's, or next week's when today already is that day.
 - "wrong_limit", "confirm_asks", "failure_limit", "attempts", "limit", "other_time_asks" are how many times the thing may happen in total.
+- "notes.every_product_without_promise": true only when the brief requires add_note for EVERY product that ends the call
+  without a recorded promise (a transfer may be an exception). Otherwise false.
 - "tool_results": for each tool list the results the agent must react to, most specific first, and end with ["*", "", "..."].
   A failed call must say that nothing was recorded and that the agent must not claim otherwise.
 - "rules": EVERY rule of the brief, each exactly once, with the step where the agent needs it:
