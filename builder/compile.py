@@ -139,7 +139,8 @@ except Exception:
 
 # Before a promise or a note goes to the bank, code checks it against the facts of the call: the product exists,
 # the date is one that can be recorded for that product, the amount lies between its lowest and its full amount,
-# a product that is already settled gets no second note. A call that fails the check is NOT sent: the request is
+# a product that is already settled gets no second note, a product whose promise failed as often as the brief
+# allows gets no further try. A call that fails the check is NOT sent: the request is
 # turned into the harmless account lookup, and GUARD_POST gives the model the reason instead of the lookup's answer.
 # After 3 stopped calls in one conversation the check lets everything through, so a call can never hang on it.
 GUARD_PRE = """try:
@@ -147,6 +148,7 @@ GUARD_PRE = """try:
     _b = config.get('body')
     _ids = [x for x in str(vars.get('product_ids') or '').split(',') if x]
     _why = ''
+    _fix = ' Correct it first.'
     if isinstance(_b, dict) and _ids:
         _pid = str(_b.get(%(id_field)r) or '')
         _done = [x for x in str(vars.get('settled') or '').split(',') if x]
@@ -158,9 +160,18 @@ GUARD_PRE = """try:
         else:
             _dates = [x for x in str(vars.get('ok_dates_' + _pid) or '').split(',') if x]
             _date = str(_b.get(%(date_field)r) or '')
-            if %(date_field)r and _dates and _date not in _dates:
+            if int(float(vars.get('pf_' + _pid) or 0)) >= %(limit)d:
+                _fix = ' Go on as the rules say for a product whose promise could not be recorded.'
+                _why = ('Recording a promise for product ' + _pid + ' has already failed ' + str(%(limit)d) + ' time(s), and that is'
+                        ' the most tries allowed for one product. Do not try again for it.')
+            elif %(date_field)r and _dates and _date not in _dates:
                 _why = ('The date ' + _date + ' cannot be recorded for product ' + _pid + '. Find that date in DATE CALENDAR and'
                         ' check the DEADLINE of this product, then tell the customer which date is possible.')
+                _later = [x for x in _dates if x > _date]
+                if len(_date) == 10 and _later:
+                    _why = _why + ' The next date that can be recorded for it is ' + _later[0] + '.'
+                elif len(_date) == 10 and _date > _dates[-1]:
+                    _why = _why + ' The latest date that can be recorded for it is ' + _dates[-1] + '.'
             elif %(amount_field)r and vars.get('floor_' + _pid) and vars.get('full_' + _pid):
                 _a = float(_b.get(%(amount_field)r))
                 if _a < float(vars.get('floor_' + _pid)) - 0.005 or _a > float(vars.get('full_' + _pid)) + 0.005:
@@ -173,7 +184,7 @@ GUARD_PRE = """try:
                     _vals.append(_k + ' ' + str(_b.get(_k)))
             vars['note_values'] = ', '.join(_vals)
     if _why:
-        _why = _why + ' Nothing was recorded: do not say that anything is recorded. Correct it first.'
+        _why = _why + ' Nothing was recorded: do not say that anything is recorded.' + _fix
         _n = int(float(vars.get('guard_blocks') or 0)) + 1
         vars['guard_blocks'] = _n
         if _n <= %(max)d:
@@ -392,7 +403,7 @@ def model_tool(rules, tools, name, writes=True):
             "date_field": dates[0] if len(dates) == 1 else "", "amount_field": amounts[0] if len(amounts) == 1 else "",
             "enum_fields": sorted(f for f in fields if fields[f].get("enum")),
             "no_second": bool(notes.get("every_product_without_promise")),
-            "keep": keep, "safe_url": account["url"]["default"], "max": 3})
+            "keep": keep, "safe_url": account["url"]["default"], "max": 3, "limit": rules["promise"]["failure_limit"]})
         tool["post_process_code"] = guard_post + tool["post_process_code"]
         tool["post_process_code"] += _checked(SETTLE_HOOK % {
             "args": "%s_args.%s" % (name, rules["account"]["id_field"]), "ok": ok["field"], "okv": str(ok["value"]).lower(),
