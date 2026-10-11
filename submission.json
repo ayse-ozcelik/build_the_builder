@@ -1,10 +1,10 @@
 {
-  "team": "TODO: team name",
-  "members": [{ "name": "TODO: your name", "email": "TODO: your e-mail" }],
-  "repo": "TODO: public address of this repository",
+  "team": "AY",
+  "members": [{ "name": "Ayşe Özçelik", "email": "220408015@st.biruni.edu.tr" }],
+  "repo": "https://github.com/ayse-ozcelik/build_the_builder.git",
   "commit": "86c2adbbc4aa6f60d387e47c7176d4b5420b1ffb",
   "run_command": "python builder/with_env.py python builder/build.py {case_folder} --tools mock/openapi.json",
   "workflow": "submission/day2.workflow.json",
-  "trace": "traces/build-day2-20261011-203813.json",
+  "trace": "traces/build-day2-20261011-213142.json",
   "mock_url": "https://freya-bank-statement-mock.earthy-ink.workers.dev"
 }
