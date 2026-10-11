@@ -1,0 +1,33 @@
+simulation 31e87d5c-3953-460a-8be4-1e2c51d75853 completed
+
+============================================================ smoke-2 changes the statement week | verdict: None None The assistant failed to meet any of the success criteria. It did not read the debt, offer other weeks, read new dates for week 3, or change the week. System events indicate that an API call to fetch card details failed (returning a Cloudflare 'Just a moment' challenge page), which led the assistant 
+   [call code_exec null]
+   [result code_exec {"status": "success", "data": null, "message": "Code executed successfully", "status_code": 200}]
+   [call code_exec null]
+   [result code_exec {"status": "success", "data": null, "message": "Code executed successfully", "status_code": 200}]
+AGENT:  Bilgilerinizi kontrol ediyorum.
+   [call api_call {"data": {"customerNo": "96158684", "aiFlow": "CardOps"}, "call": {"lang": "tr"}}]
+   [call code_exec null]
+   [result code_exec {"status": "success", "data": null, "message": "Code executed successfully", "status_code": 200}]
+   [call code_exec null]
+   [result code_exec {"status": "success", "data": null, "message": "Code executed successfully", "status_code": 200}]
+   [call end_call null]
+AGENT:  Şu anda işleminizi gerçekleştiremiyorum, sizi müşteri temsilcimize aktarıyorum.
+   [result end_call {"status": "success", "message": "Call ended"}]
+ended: assistant-ended-call
+
+============================================================ smoke-1 listens and thanks | verdict: None None The assistant failed to provide the statement debt amount in Turkish lira and the due date as required by the success criteria. After an internal system error (API failure), the assistant immediately transferred the call to a representative instead of providing the requested information. While the a
+   [call code_exec null]
+   [result code_exec {"status": "success", "data": null, "message": "Code executed successfully", "status_code": 200}]
+   [call code_exec null]
+   [result code_exec {"status": "success", "data": null, "message": "Code executed successfully", "status_code": 200}]
+AGENT:  Bilgilerinizi kontrol ediyorum.
+   [call api_call {"data": {"customerNo": "95004361", "aiFlow": "CardOps"}, "call": {"lang": "tr"}}]
+   [call code_exec null]
+   [result code_exec {"status": "success", "data": null, "message": "Code executed successfully", "status_code": 200}]
+   [call code_exec null]
+   [result code_exec {"status": "success", "data": null, "message": "Code executed successfully", "status_code": 200}]
+   [call end_call null]
+AGENT:  Şu anda işleminizi gerçekleştiremiyorum, sizi müşteri temsilcimize aktarıyorum.
+   [result end_call {"status": "success", "message": "Call ended"}]
+ended: assistant-ended-call

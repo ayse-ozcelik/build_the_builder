@@ -1,0 +1,45 @@
+{
+  "started_at": "2026-10-11T18:31:42+00:00",
+  "ended_at": "2026-10-11T19:03:17+00:00",
+  "duration_seconds": 1894.7,
+  "status": "failed",
+  "brief": "final/day2",
+  "tool_api": "mock/openapi.json",
+  "model_calls": [
+    {
+      "at": "2026-10-11T18:31:42+00:00",
+      "model": "claude-opus-5-5",
+      "purpose": "read the brief files and write the structured rule list (spec)"
+    },
+    {
+      "at": "2026-10-11T18:36:14+00:00",
+      "model": "claude-opus-5-5",
+      "purpose": "write the workflow script from spec and tools"
+    }
+  ],
+  "workflows": [],
+  "self_tests": [],
+  "notes": [
+    {
+      "at": "2026-10-11T18:31:42+00:00",
+      "message": "workspace: a temporary folder holding only .claude, briefs, builder, feedback, kit, out, tool_api"
+    },
+    {
+      "at": "2026-10-11T18:36:14+00:00",
+      "message": "tools_gen: 7 tools (cards_list, cards_balance, statement_week_get, statement_week_decide, statement_week_change, contact_email_get, statement_pdf_send)"
+    },
+    {
+      "at": "2026-10-11T18:36:14+00:00",
+      "message": "extract: 12 stages, 15 limits (failed_tries_per_question, card_selection_tries, hedged_confirmation_tries, out_of_scope_menu_question_tries, silences, calming_replies, statement_email_sends, statement_week_change_per_call, statement_week_change_per_year, card_name_examples, cards_per_reading, card_digits_spoken, no_debt_sentence_per_reading, offer_repeats, token_retry_on_401), 17 endings"
+    },
+    {
+      "at": "2026-10-11T19:03:17+00:00",
+      "message": "build failed: ResultError: Claude Code returned an error result: You've hit your session limit · resets 1:10am (Europe/Istanbul) (exit code: 1)"
+    }
+  ],
+  "summary": {
+    "model_call_count": 2,
+    "self_tests_passed": 0,
+    "self_tests_total": 0
+  }
+}

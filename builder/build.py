@@ -298,6 +298,9 @@ def main(argv=None):
     parser.add_argument("--test-brief", default="", help="practice cases to self-test on: A, B, or 'all'. Empty: no practice test")
     parser.add_argument("--max-tests", type=int, default=3)
     parser.add_argument("--keep-workspace", action="store_true")
+    parser.add_argument("--reuse", default="", help="a build folder of an earlier run on the same briefs: its spec.json and "
+                        "out/make_workflow.py are run again with tools generated anew from the tool API file (no model call). "
+                        "For when only the address of the tool API changed")
     args = parser.parse_args(argv)
 
     started = time.time()
@@ -307,6 +310,12 @@ def main(argv=None):
     label = os.path.splitext(os.path.basename(os.path.abspath(args.briefs[-1])))[0]
     files = brief_files(args.briefs)
     run_dir = os.path.join(ROOT, "build", label)
+    reused = None
+    if args.reuse:  # read before the build folder is emptied: it may be the same folder
+        with open(os.path.join(args.reuse, "spec.json"), encoding="utf-8") as f:
+            reused_spec = json.load(f)
+        with open(os.path.join(args.reuse, "out", "make_workflow.py"), encoding="utf-8") as f:
+            reused = (reused_spec, f.read())
     if os.path.exists(run_dir):
         shutil.rmtree(run_dir)
     os.makedirs(run_dir)
@@ -324,6 +333,31 @@ def main(argv=None):
     trace.note("workspace: a temporary folder holding only %s" % ", ".join(sorted(os.listdir(ws))))
     status = "failed"
     try:
+        if reused:
+            spec, script = reused
+            given = tuple(v.get("name") for v in spec.get("call_variables") or [] if isinstance(v, dict) and v.get("name"))
+            tools = tools_gen.generate_tools(tools_gen.load_spec(args.tools),
+                                             context_vars=tuple(dict.fromkeys(tools_gen.CONTEXT_VARS + given)))
+            for name, value in (("spec.json", spec), ("tools.json", tools)):
+                with open(os.path.join(ws, name), "w", encoding="utf-8") as f:
+                    json.dump(value, f, indent=1, ensure_ascii=False)
+            with open(os.path.join(ws, "out", "make_workflow.py"), "w", encoding="utf-8") as f:
+                f.write(script)
+            trace.note("--reuse %s: no model call. The spec and the workflow script of that run are used unchanged; "
+                       "tools.json is generated anew from %s (%s)" % (rel(args.reuse), rel(args.tools),
+                                                                     tools_gen.load_spec(args.tools)["servers"][0]["url"]))
+            workflow, applied = run_script(ws, spec)
+            ids = save_workflow.save(workflow)
+            trace.workflow_created(ids["workflow_id"], agent_id=ids["agent_id"], workflow=workflow)
+            with open(os.path.join(run_dir, "workflow.json"), "w", encoding="utf-8") as f:
+                json.dump(workflow, f, indent=1)
+            sys.path.insert(0, KIT)
+            import freya
+            export = os.path.join(ROOT, "submission", label + ".workflow.json")
+            freya.export_workflow(ids["workflow_id"], export)
+            trace.note("exported to " + rel(export))
+            status = "ok"
+            return
         # tools and spec
         warnings = []
         spec = extract_step.extract(ws_briefs, ws_tool_api, model=MODEL, trace=trace, cwd=ws, ordered=not folder, large=large)

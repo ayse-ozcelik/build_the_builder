@@ -1,0 +1,37 @@
+simulation dc98ca61-9072-4d52-ac86-2a28fdfe1001 completed
+
+============================================================ smoke-2 changes the statement week | verdict: None None - The assistant did not read the debt.
+- The assistant did not offer other weeks.
+- The assistant did not read new dates for week 3.
+- The assistant did not change the week.
+- The conversation was cut short because an API call failed, causing the assistant to transfer the call to a representative.
+   [call code_exec null]
+   [result code_exec {"status": "success", "data": null, "message": "Code executed successfully", "status_code": 200}]
+   [call code_exec null]
+   [result code_exec {"status": "success", "data": null, "message": "Code executed successfully", "status_code": 200}]
+AGENT:  Bilgilerinizi kontrol ediyorum.
+   [call api_call {"data": {"customerNo": "96158684", "aiFlow": "CardOps"}, "call": {"lang": "tr"}}]
+   [call code_exec null]
+   [result code_exec {"status": "success", "data": null, "message": "Code executed successfully", "status_code": 200}]
+   [call code_exec null]
+   [result code_exec {"status": "success", "data": null, "message": "Code executed successfully", "status_code": 200}]
+   [call end_call null]
+AGENT:  Şu anda işleminizi gerçekleştiremiyorum, sizi müşteri temsilcimize aktarıyorum.
+   [result end_call {"status": "success", "message": "Call ended"}]
+ended: assistant-ended-call
+
+============================================================ smoke-1 listens and thanks | verdict: None None The assistant failed to meet the success criteria. It did not provide the statement debt amount or the due date in Turkish Lira. According to the system events, an API request for the card list failed, which led the assistant to immediately transfer the user to a customer representative without rela
+   [call code_exec null]
+   [result code_exec {"status": "success", "data": null, "message": "Code executed successfully", "status_code": 200}]
+   [call code_exec null]
+   [result code_exec {"status": "success", "data": null, "message": "Code executed successfully", "status_code": 200}]
+AGENT:  Bilgilerinizi kontrol ediyorum.
+   [call api_call {"data": {"customerNo": "95004361", "aiFlow": "CardOps"}, "call": {"lang": "tr"}}]
+   [call code_exec null]
+   [result code_exec {"status": "success", "data": null, "message": "Code executed successfully", "status_code": 200}]
+   [call code_exec null]
+   [result code_exec {"status": "success", "data": null, "message": "Code executed successfully", "status_code": 200}]
+   [call end_call null]
+AGENT:  Şu anda işleminizi gerçekleştiremiyorum, sizi müşteri temsilcimize aktarıyorum.
+   [result end_call {"status": "success", "message": "Call ended"}]
+ended: assistant-ended-call
