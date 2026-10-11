@@ -69,7 +69,14 @@ def save(workflow):
     if KIT not in sys.path:
         sys.path.insert(0, KIT)
     import freya
-    freya.validate_workflow(SLOT, workflow)
+    try:
+        freya.validate_workflow(SLOT, workflow)
+    except (RuntimeError, OSError) as error:
+        # The dry run is only an early check. When the platform itself fails on it (504 and the like, seen on
+        # 11 October), go on to the real save, which checks the workflow again. A refusal (4xx) still stops here.
+        if isinstance(error, RuntimeError) and not any("-> %d" % code in str(error) for code in (500, 502, 503, 504, 520, 522, 524)):
+            raise
+        print("platform: the dry run gave no answer (%s); saving without it" % str(error)[-40:].strip(), flush=True)
     saved = freya.save_workflow(SLOT, workflow, state_file=STATE_FILE)
     return {"workflow_id": saved["workflow_id"], "agent_id": saved["agent_id"], "version": saved.get("version")}
 

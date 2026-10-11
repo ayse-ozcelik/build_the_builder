@@ -171,6 +171,10 @@ def main(argv=None):
         keep("rules.json", rules)
         trace.note("rules: %d rules (%d fit no slot and go to the prompts only), %d endings, %d bands" % (
             len(rules["rules"]), len(rules.get("unmapped") or []), len(rules["endings"]), len(rules["bands"])))
+        import runtime_facts
+        for line in runtime_facts.HiddenBriefAdapter(rules).problems():
+            trace.note("facts engine: " + line)
+            print("facts engine: " + line, flush=True)
         done("1 rules form")
 
         if args.prompts == "model":

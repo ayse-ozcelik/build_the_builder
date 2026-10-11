@@ -1,7 +1,7 @@
 """The date and amount engine that runs INSIDE the phone agent (in its code steps).
 
 compile.py copies the source of `_run` into the workflow and calls it with the
-parameters taken from the rules file. Nothing here knows a brief: holidays,
+parameters that HiddenBriefAdapter (below) takes from the rules file. Nothing here knows a brief: holidays,
 bands, deadlines, names and sentences all arrive in the parameters.
 
 Written for the platform's sandbox: everything lives inside one function (the
@@ -331,3 +331,138 @@ def _run(vars, params_json):
     vars['account_facts'] = '\n'.join(A)
     vars['debt_statement'] = ' '.join([str(P.get('intro') or '')] + S + [str(P.get('first_ask') or '')]).strip()
     vars['floor_offer_line'] = fill(P.get('floor_offer_line'), first or dict())
+
+
+class HiddenBriefAdapter:
+    """The one door through which a brief's values reach the engine above.
+
+        adapter = HiddenBriefAdapter(rules)      rules = the file rules.py filled from the brief files
+        adapter.params()                         the parameters of `_run`: calendar, bands, proposals, names, sentences
+        adapter.problems()                       what in this brief the engine cannot express, in plain sentences
+        adapter.preview(now, products)           the facts a call would get, computed here, without the platform
+
+        python builder/runtime_facts.py <rules.json> [--now 2026-10-14T11:00]
+
+    It takes its values from the rules file and from nowhere else. A new brief (other holidays, other
+    limits, other deadlines, other sentences) therefore needs no change here or in `_run`: build it with
+    fastbuild.py and everything arrives through this class. Nobody types a brief's value into the code,
+    which is also what the event's rules ask for once the final briefs are open.
+    """
+    DATE_TYPES = ("today", "next_business_day", "business_days_after_today", "calendar_days_after_today",
+                  "last_business_day_of_week", "last_business_day_of_month", "deadline")
+    CALLBACK_DAYS = ("today", "next_business_day")
+
+    def __init__(self, rules, account_tool="get_account"):
+        self.rules = rules
+        self.account_tool = account_tool
+
+    def params(self):
+        rules, account = self.rules, self.rules["account"]
+        return {
+            "now_variable": rules["now_variable"],
+            "holidays": rules["calendar"].get("holidays") or [],
+            "business_weekdays": rules["calendar"]["business_weekdays"],
+            "callback": rules["callback"],
+            "account_tool": self.account_tool,
+            "products_field": account["products_field"], "id_field": account["id_field"], "type_field": account["type_field"],
+            "amount_field": account["amount_field"], "lateness_field": account["lateness_field"],
+            "names": account["names"], "floor_fields": account["floor_fields"],
+            "intro": account["intro"], "product_sentence": account["product_sentence"], "first_ask": account["first_ask"],
+            "bands": rules["bands"], "proposals": rules["proposals"],
+            "floor_offer_line": rules["floor_offer"]["line"], "floor_offer_limit": rules["floor_offer"]["limit"],
+        }
+
+    def params_json(self):
+        import json
+        # indent=1 keeps closing braces on separate lines, so the text never holds two in a row
+        return json.dumps(self.params(), indent=1)
+
+    def problems(self):
+        """Sentences about values the engine would handle differently from what the brief may mean. Empty = none found."""
+        import datetime
+        found, rules = [], self.rules
+        say = found.append
+        days = (rules.get("calendar") or {}).get("business_weekdays") or []
+        if not days or any(not isinstance(d, int) or d < 0 or d > 6 for d in days):
+            say("calendar.business_weekdays must be numbers from 0 (Monday) to 6 (Sunday); got %r" % (days,))
+        for day in (rules.get("calendar") or {}).get("holidays") or []:
+            try:
+                datetime.date.fromisoformat(str(day))
+            except ValueError:
+                say("holiday %r is not a date (YYYY-MM-DD) and is ignored" % (day,))
+        bands = rules.get("bands") or []
+        if not bands:
+            say("no bands: every product gets today as its deadline and no attempt")
+        spans = []
+        for band in bands:
+            kind = (band.get("deadline") or {}).get("type")
+            if kind not in self.DATE_TYPES or kind == "deadline":
+                say("band %r: deadline type %r is unknown to the engine, the deadline becomes today" % (band.get("name"), kind))
+            try:
+                spans.append((float(band["min"]), float(band["max"]), band.get("name")))
+            except (KeyError, TypeError, ValueError):
+                say("band %r has no numeric min and max and never matches" % (band.get("name"),))
+        spans.sort()
+        for (lo1, hi1, n1), (lo2, hi2, n2) in zip(spans, spans[1:]):
+            if lo2 <= hi1:
+                say("bands %r and %r overlap: the one listed first wins" % (n1, n2))
+            elif lo2 > hi1 + 1:
+                say("no band covers lateness between %g and %g: the first band is used there" % (hi1, lo2))
+        most = max([int(b.get("attempts") or 0) for b in bands] or [0])
+        numbers = sorted(int(p.get("attempt") or 0) for p in rules.get("proposals") or [])
+        for n in range(1, most + 1):
+            if n not in numbers:
+                say("a band allows %d attempt(s) but the brief gave no proposal for attempt %d" % (most, n))
+        for proposal in rules.get("proposals") or []:
+            if (proposal.get("date") or {}).get("type") not in self.DATE_TYPES:
+                say("proposal %r: date type %r is unknown to the engine, the deadline is proposed"
+                    % (proposal.get("attempt"), (proposal.get("date") or {}).get("type")))
+            if int(proposal.get("attempt") or 0) > most:
+                say("proposal %r is never used: no band allows that many attempts" % (proposal.get("attempt"),))
+        callback = rules.get("callback") or {}
+        for day in callback.get("days") or []:
+            if day not in self.CALLBACK_DAYS and day not in self.DATE_TYPES:
+                say("callback day %r is unknown to the engine" % (day,))
+        if str(callback.get("from") or "") >= str(callback.get("to") or "99"):
+            say("callback window from %r to %r is empty" % (callback.get("from"), callback.get("to")))
+        account = rules.get("account") or {}
+        if not any(e.get("type") == "*" for e in account.get("floor_fields") or []):
+            kinds = sorted(str(e.get("type")) for e in account.get("floor_fields") or [])
+            say("a product type other than %s has no lowest amount of its own: its full amount is used" % ", ".join(kinds))
+        return found
+
+    def preview(self, now, products):
+        """Run the engine here on one account. Returns the variables a call would have after the account is loaded."""
+        variables = {self.rules["now_variable"]: now, "products": products}
+        _run(variables, self.params_json())
+        return variables
+
+    def sample_products(self):
+        """One made-up product per band, so that a brief can be looked at before any customer exists."""
+        account, out = self.rules["account"], []
+        for i, band in enumerate(self.rules.get("bands") or []):
+            kind = (account["names"][i % len(account["names"])].get("type") if account.get("names") else "") or "product"
+            product = {account["id_field"]: "p%d" % (i + 1), account["type_field"]: kind,
+                       account["amount_field"]: 1000.0, account["lateness_field"]: band.get("min")}
+            for entry in account.get("floor_fields") or []:
+                if entry.get("type") in (kind, "*"):
+                    product[entry["field"]] = 300.0
+            out.append(product)
+        return out
+
+
+if __name__ == "__main__":
+    import argparse
+    import json
+    import time
+    parser = argparse.ArgumentParser(description="Show what the date and amount engine makes of one rules file.")
+    parser.add_argument("rules")
+    parser.add_argument("--now", default=time.strftime("%Y-%m-%dT%H:%M"))
+    args = parser.parse_args()
+    with open(args.rules, encoding="utf-8") as f:
+        adapter = HiddenBriefAdapter(json.load(f))
+    found = adapter.problems()
+    print("PROBLEMS: " + ("none found" if not found else "".join("\n- " + line for line in found)))
+    seen = adapter.preview(args.now, adapter.sample_products())
+    print("\nSAMPLE ACCOUNT (one made-up product per band), call at %s\n" % args.now)
+    print(seen.get("call_facts", "") + "\n\n" + seen.get("debt_statement", "") + "\n\n" + seen.get("account_facts", ""))

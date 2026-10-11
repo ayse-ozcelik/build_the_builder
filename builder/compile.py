@@ -305,23 +305,11 @@ def _body(tool):
 
 
 def facts_code(rules):
-    account = rules["account"]
-    params = {
-        "now_variable": rules["now_variable"],
-        "holidays": rules["calendar"].get("holidays") or [],
-        "business_weekdays": rules["calendar"]["business_weekdays"],
-        "callback": rules["callback"],
-        "account_tool": TOOLS["account"],
-        "products_field": account["products_field"], "id_field": account["id_field"], "type_field": account["type_field"],
-        "amount_field": account["amount_field"], "lateness_field": account["lateness_field"],
-        "names": account["names"], "floor_fields": account["floor_fields"],
-        "intro": account["intro"], "product_sentence": account["product_sentence"], "first_ask": account["first_ask"],
-        "bands": rules["bands"], "proposals": rules["proposals"],
-        "floor_offer_line": rules["floor_offer"]["line"], "floor_offer_limit": rules["floor_offer"]["limit"],
-    }
-    # indent=1 keeps closing braces on separate lines, so the text never holds two in a row
+    """The code of the facts step: the engine of runtime_facts.py plus this brief's values, which reach it
+    only through HiddenBriefAdapter."""
+    adapter = runtime_facts.HiddenBriefAdapter(rules, account_tool=TOOLS["account"])
     source = inspect.getsource(runtime_facts._run)
-    return _checked(source + FACTS_TAIL % {"params": json.dumps(params, indent=1), "intro": account["intro"]})
+    return _checked(source + FACTS_TAIL % {"params": adapter.params_json(), "intro": rules["account"]["intro"]})
 
 
 PASSED_TEXT = "The check has passed. The system now continues and tells the customer why the bank is calling."

@@ -1,0 +1,86 @@
+{
+  "started_at": "2026-10-11T11:26:35+00:00",
+  "ended_at": "2026-10-11T11:26:35+00:00",
+  "duration_seconds": 0.1,
+  "status": "ok",
+  "brief": "kit/briefs/brief-a.md",
+  "tool_api": "kit/tools/openapi.json",
+  "model_calls": [],
+  "workflows": [],
+  "self_tests": [],
+  "notes": [
+    {
+      "at": "2026-10-11T11:26:35+00:00",
+      "message": "rules reused from build/fast-brief-a/rules.json"
+    },
+    {
+      "at": "2026-10-11T11:26:35+00:00",
+      "message": "rules: 51 rules (26 fit no slot and go to the prompts only), 18 endings, 2 bands"
+    },
+    {
+      "at": "2026-10-11T11:26:35+00:00",
+      "message": "facts engine: a product type other than car_loan, credit_card, personal_loan has no lowest amount of its own: its full amount is used"
+    },
+    {
+      "at": "2026-10-11T11:26:35+00:00",
+      "message": "1 rules form took 0 s"
+    },
+    {
+      "at": "2026-10-11T11:26:35+00:00",
+      "message": "step texts: fixed instructions plus the brief's rules word for word (no model call)"
+    },
+    {
+      "at": "2026-10-11T11:26:35+00:00",
+      "message": "2 step texts took 0 s"
+    },
+    {
+      "at": "2026-10-11T11:26:35+00:00",
+      "message": "limit identity.wrong_limit = 3: route on the bank's own count (wrong_answers_left) (identity)"
+    },
+    {
+      "at": "2026-10-11T11:26:35+00:00",
+      "message": "limit promise.failure_limit = 2: counted per product in the tool's hook; one product: route to the closing step (collect, collect_after_offer)"
+    },
+    {
+      "at": "2026-10-11T11:26:35+00:00",
+      "message": "limit a promise or a note is checked before it is sent (product, date, amount, no second note) = 3: checked in the tool's hook against the dates and amounts computed in code; a call that fails is not sent (collect, collect_after_offer)"
+    },
+    {
+      "at": "2026-10-11T11:26:35+00:00",
+      "message": "limit every product gets a promise or a note = 1: list kept in the tool hooks; route when none is open (collect, collect_after_offer)"
+    },
+    {
+      "at": "2026-10-11T11:26:35+00:00",
+      "message": "limit floor_offer.limit = 1: counted_step (fixed line, said on entry) (floor_gate)"
+    },
+    {
+      "at": "2026-10-11T11:26:35+00:00",
+      "message": "limit opening.confirm_asks = 2: prompt_only (who)"
+    },
+    {
+      "at": "2026-10-11T11:26:35+00:00",
+      "message": "limit callback.other_time_asks = 1: prompt_only (who)"
+    },
+    {
+      "at": "2026-10-11T11:26:35+00:00",
+      "message": "limit attempts (band early) = 1: prompt_only, with the allowed number and each proposal computed in code (collect)"
+    },
+    {
+      "at": "2026-10-11T11:26:35+00:00",
+      "message": "limit attempts (band late) = 2: prompt_only, with the allowed number and each proposal computed in code (collect)"
+    },
+    {
+      "at": "2026-10-11T11:26:35+00:00",
+      "message": "3 compile took 0 s"
+    },
+    {
+      "at": "2026-10-11T11:26:35+00:00",
+      "message": "--no-save: compiled only, nothing was sent to Freya"
+    }
+  ],
+  "summary": {
+    "model_call_count": 0,
+    "self_tests_passed": 0,
+    "self_tests_total": 0
+  }
+}
