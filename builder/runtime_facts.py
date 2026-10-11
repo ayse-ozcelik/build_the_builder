@@ -206,7 +206,7 @@ def _run(vars, params_json):
     proposals = sorted(P.get('proposals') or [], key=lambda x: int(x.get('attempt') or 0))
     A = ['ACCOUNT FACTS (computed by the bank system. Use them exactly as written, never recompute dates yourself):',
          '- Today: ' + both(today) + (', a business day.' if isbd(today) else ', NOT a business day: nothing can be recorded for today, offer ' + both(nbd(today)) + ' instead.')]
-    S, ids, maxdl, first, offers, deadlines = [], [], today, None, [], []
+    S, ids, maxdl, first, deadlines, total = [], [], today, None, [], 0.0
     if len(prods) > 1:
         A.append('- PRODUCTS: ' + str(len(prods)) + ', always handled in this order: '
                  + ', '.join(str(p.get(idf)) for p in prods) + '. Each product has its own amounts, deadline and attempts.')
@@ -238,6 +238,18 @@ def _run(vars, params_json):
             maxdl = dead
         ids.append(str(p.get(idf)))
         deadlines.append((name, dead))
+        okd, d = [], today
+        while d <= dead:
+            if isbd(d):
+                okd.append(d.isoformat())
+            d = d + one
+        vars['ok_dates_' + str(p.get(idf))] = ','.join(okd)
+        vars['floor_' + str(p.get(idf))] = fm(floor)
+        vars['full_' + str(p.get(idf))] = fm(full)
+        try:
+            total = total + float(full)
+        except Exception:
+            pass
         latetext = str(int(late)) if late == int(late) else str(late)
         A.append('- Product: ' + name + ' (' + idf + ' ' + str(p.get(idf)) + '). Always name it in these words.')
         A.append('  FULL amount: ' + fm(full) + '. ' + str(P.get('lateness_field') or 'lateness') + ': ' + latetext + '.')
@@ -245,15 +257,13 @@ def _run(vars, params_json):
                  + ', both included, can be recorded. Nothing below ' + fm(floor) + ' and nothing above ' + fm(full) + '.')
         A.append('  DEADLINE (latest date that can be recorded): ' + both(dead) + '.')
         A.append('  PERSUASION ATTEMPTS ALLOWED: ' + str(tries) + '.')
-        avail, said, stopped = [], [], False
+        avail, stopped = [], False
         for pr in proposals:
             k = int(pr.get('attempt') or 0)
             scope = pr.get('bands') or []
             if k > tries or (scope and band.get('name') not in scope):
-                if len(prods) == 1:
-                    A.append('  Attempt ' + str(k) + ' proposal: NOT available for this product.')
-                elif not stopped:
-                    # several products: the stop stands in the list itself, where the next proposal would be
+                if not stopped:
+                    # the stop stands in the list itself, where the next proposal would be
                     A.append('  After that: NOTHING. No further proposal for this product and no FLOOR offer. It is refused.')
                     stopped = True
                 continue
@@ -266,36 +276,36 @@ def _run(vars, params_json):
                 amount += ', or the FLOOR amount ' + fm(floor) + ' if the customer already said the full amount is too much'
             A.append('  Attempt ' + str(k) + ' proposal: payment on ' + both(d) + ' of ' + amount + '.')
             avail.append(k)
-            said.append('Attempt ' + str(k) + ': payment on ' + both(d) + ' of ' + amount)
+        if not stopped:
+            A.append('  After that: NOTHING. No further proposal for this product and no FLOOR offer. It is refused.')
+        steps = ['refusal ' + str(i + 1) + ' -> make the Attempt ' + str(k) + ' proposal' for i, k in enumerate(avail)]
+        steps.append('refusal ' + str(len(avail) + 1) + ' -> STOP: propose nothing more for this product, not the FLOOR'
+                     ' either; it is refused')
+        A.append('  IF THE CUSTOMER REFUSES THIS PRODUCT (and no rule says to make no attempt): ' + '. '.join(steps)
+                 + '. A refusal the customer already gave for this product earlier in the call counts as refusal 1.')
         if len(prods) > 1:
-            if not stopped:
-                A.append('  After that: NOTHING. No further proposal for this product and no FLOOR offer. It is refused.')
-            steps =['refusal ' + str(i + 1) + ' -> make the Attempt ' + str(k) + ' proposal' for i, k in enumerate(avail)]
-            steps.append('refusal ' + str(len(avail) + 1) + ' -> STOP: propose nothing more for this product, not the FLOOR'
-                         ' either; it is refused')
-            A.append('  IF THE CUSTOMER REFUSES THIS PRODUCT (and no rule says to make no attempt): ' + '. '.join(steps)
-                     + '. A refusal the customer already gave for this product earlier in the call counts as refusal 1.')
             # the tool hooks repeat this right before the product's turn comes
             vars['script_' + str(p.get(idf))] = (
-                'NEXT PRODUCT: ' + name + ' (' + str(p.get(idf)) + '). After a refusal you may make exactly ' + str(len(avail))
-                + ' proposal(s) for it, no more: ' + '; then '.join(said) + '. If the customer refuses after that, it is refused:'
-                ' propose nothing else for it and act on the refusal at once. The FLOOR offer is only for a customer who says'
-                ' the amount is too much. "No" or "I am not paying" is a refusal, never a reason to offer the FLOOR.')
+                'If ' + name + ' (' + str(p.get(idf)) + ') is still to be discussed: after a refusal exactly ' + str(len(avail))
+                + ' proposal(s), as its Attempt line(s) say, then stop. No FLOOR offer after a plain "no".')
         values = dict(p)
         values.update(name=name, amount=fm(full), floor=fm(floor), lateness=latetext)
         S.append(fill(P.get('product_sentence'), values))
-        offers.append('  - ' + name + ': "' + fill(P.get('floor_offer_line'), values) + '"')
+        if len(prods) > 1:
+            # several products: the offer stands with its product, behind its condition, and nowhere else
+            A.append('  FLOOR OFFER, at most ' + str(P.get('floor_offer_limit') or 1) + ' time(s) for this product and ONLY IF the customer'
+                     ' says its amount is too much, asks you to name an amount, or proposes less than ' + fm(floor)
+                     + ' (NEVER after a plain "no" or "I am not paying": that is a refusal, see above). Then say exactly: "'
+                     + fill(P.get('floor_offer_line'), values) + '"')
         if first is None:
             first = values
+    if len(prods) > 1:
+        A.append('- TOTAL of the FULL amounts of all products: ' + fm(total) + '. Never add amounts up yourself.')
     A.append('')
     if len(prods) == 1:
         A.append('FLOOR OFFER: never say it yourself. To make it, CALL transition_to_floor_gate; the system then says it.')
     else:
-        A.append('FLOOR OFFER (at most ' + str(P.get('floor_offer_limit') or 1) + ' time(s) per product; say exactly this sentence and do not call transition_to_floor_gate).'
-                 ' Make it ONLY when the customer says the full amount of that product is too much, asks you to name an amount, or'
-                 ' proposes less than its FLOOR. A plain refusal to pay is NOT a reason for it: a refusal gets the next attempt'
-                 ' proposal of that product, if one is left.')
-        A.extend(offers)
+        A.append('FLOOR OFFER: only as written under each product above. Do not call transition_to_floor_gate.')
     A.append('')
     A.append('DATE CALENDAR (date: can it be recorded?):')
     d = today
@@ -315,6 +325,8 @@ def _run(vars, params_json):
     A.append('')
     A.append(words)
     vars['account_state'] = 'loaded'
+    if not vars.get('settle_summary'):
+        vars['settle_summary'] = 'nothing was recorded for any product yet'
     vars['product_ids'] = ','.join(ids)
     vars['account_facts'] = '\n'.join(A)
     vars['debt_statement'] = ' '.join([str(P.get('intro') or '')] + S + [str(P.get('first_ask') or '')]).strip()

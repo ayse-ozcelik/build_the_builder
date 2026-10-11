@@ -12,6 +12,18 @@
   "where": "collect, collect_after_offer"
  },
  {
+  "limit": "a promise or a note is checked before it is sent (product, date, amount, no second note)",
+  "n": 3,
+  "how": "checked in the tool's hook against the dates and amounts computed in code; a call that fails is not sent",
+  "where": "collect, collect_after_offer"
+ },
+ {
+  "limit": "no closing while a product has neither a promise nor a note",
+  "n": 2,
+  "how": "checked in the hook of close_call; a close that comes too early is not sent",
+  "where": "every step"
+ },
+ {
   "limit": "every product gets a promise or a note",
   "n": 1,
   "how": "list kept in the tool hooks; route when none is open; no closing tool in the negotiation",

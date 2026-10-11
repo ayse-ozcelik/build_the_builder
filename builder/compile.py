@@ -40,7 +40,8 @@ TRANSFER_CLOSE_TEXT = (
     " the values the closing table gives for this transfer.")
 SETTLED_CLOSE_TEXT = (
     "STEP: every product has been dealt with and no promise was recorded. Do not negotiate any more. Thank the customer,"
-    " say goodbye and CALL %s with the values the closing table gives for this situation.")
+    " say goodbye and CALL %s with the values the closing table gives for this situation."
+    " WHAT WAS RECORDED, in the order of the products: {{settle_summary}}.")
 STRUCTURE_NOTE_AFTER = (
     "\n\nTHE LOWEST AMOUNT (FLOOR) HAS JUST BEEN OFFERED by the system, in the last sentence the customer heard. That was the"
     " only offer of it that is allowed here: do not offer it again and do not repeat it as a new offer. If the customer gives"
@@ -58,6 +59,8 @@ POST_HOOK = """try:
             _d['error'] = 'the service failed, nothing was recorded'
             result['data'] = _d
         for _f, _v, _t in %(cases)r:
+            if _d.get('guarded'):
+                break
             if _f == '*' or str(_d.get(_f)).lower() == str(_v).lower():
                 _d['what_to_do_next'] = _t
                 break
@@ -134,6 +137,107 @@ except Exception:
     pass
 """
 
+# Before a promise or a note goes to the bank, code checks it against the facts of the call: the product exists,
+# the date is one that can be recorded for that product, the amount lies between its lowest and its full amount,
+# a product that is already settled gets no second note. A call that fails the check is NOT sent: the request is
+# turned into the harmless account lookup, and GUARD_POST gives the model the reason instead of the lookup's answer.
+# After 3 stopped calls in one conversation the check lets everything through, so a call can never hang on it.
+GUARD_PRE = """try:
+    vars['guard_block'] = ''
+    _b = config.get('body')
+    _ids = [x for x in str(vars.get('product_ids') or '').split(',') if x]
+    _why = ''
+    if isinstance(_b, dict) and _ids:
+        _pid = str(_b.get(%(id_field)r) or '')
+        _done = [x for x in str(vars.get('settled') or '').split(',') if x]
+        if _pid not in _ids:
+            _why = 'There is no product ' + _pid + '. The products of this customer are: ' + ', '.join(_ids) + '.'
+        elif %(kind)r == 'note':
+            if %(no_second)r and _pid in _done:
+                _why = 'Product ' + _pid + ' already has ' + str(vars.get('rec_' + _pid) or 'a promise or a note') + '. It gets no further note.'
+        else:
+            _dates = [x for x in str(vars.get('ok_dates_' + _pid) or '').split(',') if x]
+            _date = str(_b.get(%(date_field)r) or '')
+            if %(date_field)r and _dates and _date not in _dates:
+                _why = ('The date ' + _date + ' cannot be recorded for product ' + _pid + '. Find that date in DATE CALENDAR and'
+                        ' check the DEADLINE of this product, then tell the customer which date is possible.')
+            elif %(amount_field)r and vars.get('floor_' + _pid) and vars.get('full_' + _pid):
+                _a = float(_b.get(%(amount_field)r))
+                if _a < float(vars.get('floor_' + _pid)) - 0.005 or _a > float(vars.get('full_' + _pid)) + 0.005:
+                    _why = ('The amount ' + str(_b.get(%(amount_field)r)) + ' cannot be recorded for product ' + _pid + '. Only amounts from '
+                            + str(vars.get('floor_' + _pid)) + ' up to ' + str(vars.get('full_' + _pid)) + ' can.')
+        if %(kind)r == 'note':
+            _vals = []
+            for _k in %(enum_fields)r:
+                if _b.get(_k) is not None:
+                    _vals.append(_k + ' ' + str(_b.get(_k)))
+            vars['note_values'] = ', '.join(_vals)
+    if _why:
+        _why = _why + ' Nothing was recorded: do not say that anything is recorded. Correct it first.'
+        _n = int(float(vars.get('guard_blocks') or 0)) + 1
+        vars['guard_blocks'] = _n
+        if _n <= %(max)d:
+            _safe = dict()
+            for _k in %(keep)r:
+                if _k in _b:
+                    _safe[_k] = _b.get(_k)
+            config['url'] = %(safe_url)r
+            config['body'] = _safe
+            vars['guard_block'] = _why
+except Exception:
+    pass
+"""
+
+GUARD_POST = """try:
+    _g = str(vars.get('guard_block') or '')
+    vars['guard_block'] = ''
+    if _g and isinstance(result, dict):
+        _d = result.get('data')
+        if isinstance(_d, dict) and %(products_field)r in _d:
+            _n = dict()
+            _n[%(ok)r] = %(not_ok)r
+            _n['guarded'] = 'yes'
+            _n['error'] = 'NOT SENT TO THE BANK. ' + _g
+            _n['what_to_do_next'] = 'This call was stopped before it reached the bank, so nothing failed at the bank. ' + _g
+            result['data'] = _n
+except Exception:
+    pass
+"""
+
+# The same for closing, when every product without a promise needs a note: a close_call that comes while a product
+# is still open is not sent. (Seen on the platform: the model can call close_call in a step that does not list it,
+# and it then closed before the note was written.) After a transfer nothing is checked. Lets through after 2 stops.
+CLOSE_GUARD_PRE = """try:
+    vars['guard_block'] = ''
+    _b = config.get('body')
+    _ids = [x for x in str(vars.get('product_ids') or '').split(',') if x]
+    _done = [x for x in str(vars.get('settled') or '').split(',') if x]
+    _open = [x for x in _ids if x not in _done]
+    if isinstance(_b, dict) and _open and str(vars.get('transferred') or '') != 'yes':
+        _n = int(float(vars.get('close_blocks') or 0)) + 1
+        vars['close_blocks'] = _n
+        if _n <= %(max)d:
+            _safe = dict()
+            for _k in %(keep)r:
+                if _k in _b:
+                    _safe[_k] = _b.get(_k)
+            config['url'] = %(safe_url)r
+            config['body'] = _safe
+            vars['guard_block'] = ('The call is NOT closed. These products have neither a recorded promise nor a note yet: '
+                                   + ', '.join(_open) + '. Deal with each of them first as the rules say, one tool call per'
+                                   ' message. After the last one the system moves on to the closing step by itself.')
+except Exception:
+    pass
+"""
+
+TRANSFER_HOOK = """try:
+    _d = result.get('data') if isinstance(result, dict) else None
+    if isinstance(_d, dict) and str(_d.get(%(ok)r)).lower() == %(okv)r:
+        vars['transferred'] = 'yes'
+except Exception:
+    pass
+"""
+
 # After a promise or a note: which products are settled? Code keeps this list, not the model.
 # kind is 'promise' or 'note'. A product is settled once it has a recorded promise or a note.
 SETTLE_HOOK = """try:
@@ -151,7 +255,14 @@ SETTLE_HOOK = """try:
                 _done.append(_pid or ('unknown' + str(len(_done))))
             if %(kind)r == 'promise':
                 vars['promises_made'] = int(float(vars.get('promises_made') or 0)) + 1
-        elif %(kind)r == 'promise' and 'already' not in str(_d.get('error') or '').lower():
+                vars['rec_' + _pid] = 'a recorded promise'
+            else:
+                vars['rec_' + _pid] = 'a note (' + str(vars.get('note_values') or '') + ')'
+            _sum = []
+            for _x in _ids:
+                _sum.append(_x + ': ' + str(vars.get('rec_' + _x) or 'nothing recorded'))
+            vars['settle_summary'] = '; '.join(_sum)
+        elif %(kind)r == 'promise' and not _d.get('guarded') and 'already' not in str(_d.get('error') or '').lower():
             _fails = int(float(vars.get('pf_' + _pid) or 0)) + 1
             vars['pf_' + _pid] = _fails
             _d['failed_tries_for_this_product'] = _fails
@@ -163,8 +274,9 @@ SETTLE_HOOK = """try:
         if _ids and len(_done) >= len(_ids):
             vars['all_settled'] = 'with_promise' if int(float(vars.get('promises_made') or 0)) > 0 else 'without_promise'
         elif _ok and len(_ids) > 1:
-            _d['what_to_do_next'] = (str(_d.get('what_to_do_next') or '') + ' Products that still have neither a promise nor a note: '
-                                     + ', '.join(_open) + '. Deal with them now, one tool call per message. '
+            _d['what_to_do_next'] = (str(_d.get('what_to_do_next') or '') + ' Still open (neither a promise nor a note): '
+                                     + ', '.join(_open) + '. If the customer has already confirmed what happens with one of them,'
+                                     ' CALL its tool NOW, before you say anything. One tool call per message. '
                                      + str(vars.get('script_' + _open[0]) or ''))
 except Exception:
     pass
@@ -271,8 +383,29 @@ def model_tool(rules, tools, name, writes=True):
     tool["pre_process_code"] = pre_hook(rules, name, tool)
     tool["post_process_code"] = post_hook(rules, name)
     kind = {TOOLS["promise"]: "promise", TOOLS["note"]: "note"}.get(name)
+    ok = rules["promise"]["ok"]
+    account = tools[TOOLS["account"]]["function"]["parameters"]["properties"]
+    keep = sorted(f for f in account["body"].get("properties", {}) if f in rules.get("call_variables", []))
+    guard_post = _checked(GUARD_POST % {"products_field": rules["account"]["products_field"], "ok": ok["field"],
+                                        "not_ok": (not ok["value"]) if isinstance(ok["value"], bool) else ""})
+    notes = rules.get("notes") or {}
+    if name == TOOLS["transfer"]:
+        tool["post_process_code"] += _checked(TRANSFER_HOOK % {"ok": ok["field"], "okv": str(ok["value"]).lower()})
+    if name == TOOLS["close"] and notes.get("used") and notes.get("every_product_without_promise"):
+        tool["pre_process_code"] += _checked(CLOSE_GUARD_PRE % {"keep": keep, "safe_url": account["url"]["default"], "max": 2})
+        tool["post_process_code"] = guard_post + tool["post_process_code"]
     if kind:
-        ok = rules["promise"]["ok"]
+        fields = _body(tool).get("properties") or {}
+        dates = [f for f in fields if "YYYY-MM-DD" in str(fields[f].get("description", "")).upper()]
+        amounts = [f for f in fields if fields[f].get("type") in ("number", "integer")]
+        tool["pre_process_code"] += _checked(GUARD_PRE % {
+            "id_field": rules["account"]["id_field"], "kind": kind,
+            # a field is checked only when the tool API file leaves no doubt which one it is
+            "date_field": dates[0] if len(dates) == 1 else "", "amount_field": amounts[0] if len(amounts) == 1 else "",
+            "enum_fields": sorted(f for f in fields if fields[f].get("enum")),
+            "no_second": bool(notes.get("every_product_without_promise")),
+            "keep": keep, "safe_url": account["url"]["default"], "max": 3})
+        tool["post_process_code"] = guard_post + tool["post_process_code"]
         tool["post_process_code"] += _checked(SETTLE_HOOK % {
             "args": "%s_args.%s" % (name, rules["account"]["id_field"]), "ok": ok["field"], "okv": str(ok["value"]).lower(),
             "kind": kind, "limit": rules["promise"]["failure_limit"]})
@@ -410,6 +543,12 @@ def compile_workflow(rules, prompts, tools):
         report.append({"limit": "identity.wrong_limit", "n": identity["wrong_limit"], "how": "tool_limit", "where": "identity"})
     report.append({"limit": "promise.failure_limit", "n": promise["failure_limit"],
                    "how": "counted per product in the tool's hook; one product: route to the closing step", "where": "collect, collect_after_offer"})
+    report.append({"limit": "a promise or a note is checked before it is sent (product, date, amount, no second note)", "n": 3,
+                   "how": "checked in the tool's hook against the dates and amounts computed in code; a call that fails is not sent",
+                   "where": "collect, collect_after_offer"})
+    if note_all:
+        report.append({"limit": "no closing while a product has neither a promise nor a note", "n": 2,
+                       "how": "checked in the hook of close_call; a close that comes too early is not sent", "where": "every step"})
     report.append({"limit": "every product gets a promise or a note", "n": 1,
                    "how": "list kept in the tool hooks; route when none is open"
                           + ("; no closing tool in the negotiation" if note_all else ""), "where": "collect, collect_after_offer"})

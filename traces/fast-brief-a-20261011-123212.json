@@ -1,0 +1,98 @@
+{
+  "started_at": "2026-10-11T09:32:12+00:00",
+  "ended_at": "2026-10-11T09:34:57+00:00",
+  "duration_seconds": 164.8,
+  "status": "failed",
+  "brief": "kit/briefs/brief-a.md",
+  "tool_api": "kit/tools/openapi.json",
+  "model_calls": [],
+  "workflows": [
+    {
+      "at": "2026-10-11T09:32:16+00:00",
+      "workflow_id": "fa765caf-987d-4d19-8353-4611cbb0bdd4",
+      "agent_id": "dadb25c6-fec0-41b0-8874-b1644dda388a",
+      "step_count": 13,
+      "tool_count": 6
+    }
+  ],
+  "self_tests": [],
+  "notes": [
+    {
+      "at": "2026-10-11T09:32:12+00:00",
+      "message": "rules reused from build/fast-brief-a/rules.json"
+    },
+    {
+      "at": "2026-10-11T09:32:12+00:00",
+      "message": "rules: 51 rules (26 fit no slot and go to the prompts only), 18 endings, 2 bands"
+    },
+    {
+      "at": "2026-10-11T09:32:12+00:00",
+      "message": "1 rules form took 0 s"
+    },
+    {
+      "at": "2026-10-11T09:32:12+00:00",
+      "message": "step texts: fixed instructions plus the brief's rules word for word (no model call)"
+    },
+    {
+      "at": "2026-10-11T09:32:12+00:00",
+      "message": "2 step texts took 0 s"
+    },
+    {
+      "at": "2026-10-11T09:32:12+00:00",
+      "message": "limit identity.wrong_limit = 3: route on the bank's own count (wrong_answers_left) (identity)"
+    },
+    {
+      "at": "2026-10-11T09:32:12+00:00",
+      "message": "limit promise.failure_limit = 2: counted per product in the tool's hook; one product: route to the closing step (collect, collect_after_offer)"
+    },
+    {
+      "at": "2026-10-11T09:32:12+00:00",
+      "message": "limit a promise or a note is checked before it is sent (product, date, amount, no second note) = 3: checked in the tool's hook against the dates and amounts computed in code; a call that fails is not sent (collect, collect_after_offer)"
+    },
+    {
+      "at": "2026-10-11T09:32:12+00:00",
+      "message": "limit every product gets a promise or a note = 1: list kept in the tool hooks; route when none is open (collect, collect_after_offer)"
+    },
+    {
+      "at": "2026-10-11T09:32:12+00:00",
+      "message": "limit floor_offer.limit = 1: counted_step (fixed line, said on entry) (floor_gate)"
+    },
+    {
+      "at": "2026-10-11T09:32:12+00:00",
+      "message": "limit opening.confirm_asks = 2: prompt_only (who)"
+    },
+    {
+      "at": "2026-10-11T09:32:12+00:00",
+      "message": "limit callback.other_time_asks = 1: prompt_only (who)"
+    },
+    {
+      "at": "2026-10-11T09:32:12+00:00",
+      "message": "limit attempts (band early) = 1: prompt_only, with the allowed number and each proposal computed in code (collect)"
+    },
+    {
+      "at": "2026-10-11T09:32:12+00:00",
+      "message": "limit attempts (band late) = 2: prompt_only, with the allowed number and each proposal computed in code (collect)"
+    },
+    {
+      "at": "2026-10-11T09:32:12+00:00",
+      "message": "3 compile took 0 s"
+    },
+    {
+      "at": "2026-10-11T09:32:16+00:00",
+      "message": "4 save took 4 s"
+    },
+    {
+      "at": "2026-10-11T09:32:16+00:00",
+      "message": "build time without practice customers: 4 s"
+    },
+    {
+      "at": "2026-10-11T09:34:57+00:00",
+      "message": "build failed: RuntimeError: the practice run failed: ^^\n  File \"C:\\Users\\aayse\\deneme1\\builder\\kit\\freya.py\", line 91, in run_simulation\n    sim = api(\"POST\", \"/api/v2/simulations\", {\n        \"agentId\": agent_id, \"name\": name, \"mode\": \"chat\", \"selectedPersonaIds\": list(variables_by_persona),\n        \"customerVariablesMap\": variables_by_persona, \"maxConcurrentCalls\": concurrency, \"runsPerPersona\": 1, \"maxCallDurationSeconds\": max_seconds,\n        \"assistantLlmOverride\": AGENT_LLM, \"routingLlmOverride\": AGENT_LLM, \"extractionLlmOverride\": AGENT_LLM,\n        \"personaLlmOverride\": SIM_LLM, \"analysisLlmOverride\": SIM_LLM})\n  File \"C:\\Users\\aayse\\deneme1\\builder\\kit\\freya.py\", line 19, in api\n    raise RuntimeError(f\"{method} {path} -> {e.code}: {e.read().decode()[:1500]}\") from None\nRuntimeError: POST /api/v2/simulations -> 502: error code: 502\n\n"
+    }
+  ],
+  "summary": {
+    "model_call_count": 0,
+    "self_tests_passed": 0,
+    "self_tests_total": 0
+  }
+}

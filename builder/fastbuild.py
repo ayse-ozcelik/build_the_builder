@@ -17,6 +17,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -52,15 +53,38 @@ def chat_turn(freya, workflow_id, rules):
     return str(result.get("response") or "")
 
 
-def run_practice(agent_id, test_brief, reps, out_path):
-    """Run the kit's practice customers. Returns the result dict of run_cases.py."""
+def run_practice(agent_id, test_brief, reps, out_path, max_seconds, style=""):
+    """Run the kit's practice customers and show their lines as they come. Returns the result dict of run_cases.py.
+
+    Raises TimeoutError when the run is not finished after `max_seconds` (a simulation can stay 'running' on the
+    platform for hours after its calls are over), so a build never waits longer than that for its test.
+    """
     command = [sys.executable, "-u", os.path.join(KIT, "tools", "run_cases.py"), agent_id, "--out", out_path, "--reps", str(reps)]
     if test_brief != "all":
         command += ["--brief", test_brief]
-    run = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=3000)
-    print(run.stdout, flush=True)
+    if style:
+        command += ["--style", style]
+    if os.path.exists(out_path):
+        os.remove(out_path)  # an older result must never be read as the result of this run
+    run = subprocess.Popen(command, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                           encoding="utf-8", errors="replace")
+    lines = []
+
+    def show():
+        for line in run.stdout:
+            lines.append(line)
+            print("   " + line.rstrip(), flush=True)
+
+    reader = threading.Thread(target=show, daemon=True)
+    reader.start()
+    try:
+        run.wait(timeout=max_seconds)
+    except subprocess.TimeoutExpired:
+        run.kill()
+        raise TimeoutError("not finished after %d s; last line: %s" % (max_seconds, (lines[-1].strip() if lines else "(no output)")[:200]))
+    reader.join(5)
     if run.returncode != 0 or not os.path.exists(out_path):
-        raise RuntimeError("the practice run failed: " + (run.stderr or run.stdout)[-800:])
+        raise RuntimeError("the practice run failed: " + "".join(lines)[-800:])
     with open(out_path, encoding="utf-8") as f:
         return json.load(f)
 
@@ -79,6 +103,9 @@ def main(argv=None):
     parser.add_argument("--tools", required=True, help="the tool API file (openapi.json)")
     parser.add_argument("--test-brief", default="", help="practice cases to test on after the build: A, B or 'all'")
     parser.add_argument("--reps", type=int, default=1)
+    parser.add_argument("--style", default="", help="how the practice customers talk (see kit/tools/run_cases.py --style)")
+    parser.add_argument("--test-seconds", type=int, default=900,
+                        help="stop waiting for the practice customers after this long; the build still exports and ends")
     parser.add_argument("--chat-turn", action="store_true", help="also send one chat turn after saving (can time out)")
     parser.add_argument("--prompts", choices=("verbatim", "model"), default="verbatim",
                         help="verbatim: the brief's rules word for word (same every build). model: a model rewrites them")
@@ -163,10 +190,17 @@ def main(argv=None):
         trace.note("build time without practice customers: %.0f s" % build_seconds)
 
         if args.test_brief:
-            test = run_practice(ids["agent_id"], args.test_brief, args.reps, os.path.join(run_dir, "test.json"))
-            failed = [r["id"] for r in test["final"] if not r["pass"]]
-            trace.self_test("practice customers (%s, %d run(s) each)" % (args.test_brief, args.reps), not failed,
-                            "%s of %s passed%s" % (test["passed"], test["total"], "; failed: " + ", ".join(failed) if failed else ""))
+            name = "practice customers (%s, %d run(s) each%s)" % (args.test_brief, args.reps, ", style " + args.style if args.style else "")
+            try:
+                test = run_practice(ids["agent_id"], args.test_brief, args.reps, os.path.join(run_dir, "test.json"),
+                                    args.test_seconds, args.style)
+                failed = [r["id"] for r in test["final"] if not r["pass"]]
+                trace.self_test(name, not failed, "%s of %s passed%s" % (
+                    test["passed"], test["total"], "; failed: " + ", ".join(failed) if failed else ""))
+            except (TimeoutError, RuntimeError) as error:
+                # The agent is saved and can still be exported: a test that hangs or cannot start must not cost the build.
+                trace.self_test(name, False, "no result: " + str(error))
+                print("practice customers: no result, %s" % error, flush=True)
             done("5 practice customers")
 
         export = os.path.join(ROOT, "submission", label + ".workflow.json")
