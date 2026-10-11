@@ -59,7 +59,8 @@ def run_practice(agent_id, test_brief, reps, out_path, max_seconds, style=""):
     Raises TimeoutError when the run is not finished after `max_seconds` (a simulation can stay 'running' on the
     platform for hours after its calls are over), so a build never waits longer than that for its test.
     """
-    command = [sys.executable, "-u", os.path.join(KIT, "tools", "run_cases.py"), agent_id, "--out", out_path, "--reps", str(reps)]
+    # the kit's run_cases.py, started through freya_retry.py so that a short outage of the platform does not end it
+    command = [sys.executable, "-u", os.path.join(ROOT, "builder", "freya_retry.py"), agent_id, "--out", out_path, "--reps", str(reps)]
     if test_brief != "all":
         command += ["--brief", test_brief]
     if style:
@@ -92,6 +93,7 @@ def run_practice(agent_id, test_brief, reps, out_path, max_seconds, style=""):
 def main(argv=None):
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import compile as compile_step
+    import freya_retry
     import prompts as prompts_step
     import rules as rules_step
     import save_workflow
@@ -173,6 +175,7 @@ def main(argv=None):
             status = "ok"
             return
 
+        freya_retry.install()  # saving and exporting wait out a short outage of the platform
         ids = save_workflow.save(workflow)
         trace.workflow_created(ids["workflow_id"], agent_id=ids["agent_id"], workflow=workflow)
         sys.path.insert(0, KIT)
