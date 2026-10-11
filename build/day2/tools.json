@@ -1,0 +1,440 @@
+{
+ "cards_list": {
+  "type": "function",
+  "function": {
+   "name": "cards_list",
+   "handler": "__function__:api_call",
+   "description": "Returns the customer's cards the assistant may talk about. The first service of every call.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "url": {
+      "type": "string",
+      "default": "https://freya-bank-statement-mock.earthy-ink.workers.dev/voice/v1/cards.list"
+     },
+     "method": {
+      "type": "string",
+      "default": "POST"
+     },
+     "headers": {
+      "type": "object",
+      "properties": {
+       "Content-Type": {
+        "type": "string",
+        "default": "application/json"
+       }
+      }
+     },
+     "body": {
+      "type": "object",
+      "required": [
+       "customerNo"
+      ],
+      "properties": {
+       "customerNo": {
+        "type": "string",
+        "default": "{{customerNo}}",
+        "description": "The customer number the phone menu handed over with the call (8 digits)."
+       },
+       "aiFlow": {
+        "type": "string",
+        "default": "CardOps"
+       },
+       "lang": {
+        "type": "string",
+        "default": "tr"
+       }
+      }
+     }
+    }
+   }
+  },
+  "config": {
+   "timeoutMs": 12000,
+   "maxRetries": 0
+  },
+  "pre_process_code": "try:\n    _body = config.get('body')\n    if isinstance(_body, dict):\n        _nested = dict()\n        _moved = []\n        for _field, _parents in [['customerNo', ['data']], ['aiFlow', ['data']], ['lang', ['call']]]:\n            _moved.append(_field)\n            if _field in _body:\n                _at = _nested\n                for _parent in _parents:\n                    _at = _at.setdefault(_parent, dict())\n                _at[_field] = _body[_field]\n        for _field in _body:\n            if _field not in _moved and _field not in _nested:\n                _nested[_field] = _body[_field]\n        config['body'] = _nested\nexcept Exception:\n    pass\n"
+ },
+ "cards_balance": {
+  "type": "function",
+  "function": {
+   "name": "cards_balance",
+   "handler": "__function__:api_call",
+   "description": "Returns the statement date, the due date and the debt per currency of one card.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "url": {
+      "type": "string",
+      "default": "https://freya-bank-statement-mock.earthy-ink.workers.dev/voice/v1/cards.balance"
+     },
+     "method": {
+      "type": "string",
+      "default": "POST"
+     },
+     "headers": {
+      "type": "object",
+      "properties": {
+       "Content-Type": {
+        "type": "string",
+        "default": "application/json"
+       }
+      }
+     },
+     "body": {
+      "type": "object",
+      "required": [
+       "cardNumber"
+      ],
+      "properties": {
+       "cardNumber": {
+        "type": "string",
+        "default": "{{cardNumber}}",
+        "description": "The card number exactly as cards.list returned it in cardNumber (masked, like 540000******1234). Never rebuilt from digits the caller says."
+       },
+       "lang": {
+        "type": "string",
+        "default": "tr"
+       }
+      }
+     }
+    }
+   }
+  },
+  "config": {
+   "timeoutMs": 12000,
+   "maxRetries": 0
+  },
+  "pre_process_code": "try:\n    _body = config.get('body')\n    if isinstance(_body, dict):\n        _nested = dict()\n        _moved = []\n        for _field, _parents in [['cardNumber', ['data']], ['lang', ['call']]]:\n            _moved.append(_field)\n            if _field in _body:\n                _at = _nested\n                for _parent in _parents:\n                    _at = _at.setdefault(_parent, dict())\n                _at[_field] = _body[_field]\n        for _field in _body:\n            if _field not in _moved and _field not in _nested:\n                _nested[_field] = _body[_field]\n        config['body'] = _nested\nexcept Exception:\n    pass\n"
+ },
+ "statement_week_get": {
+  "type": "function",
+  "function": {
+   "name": "statement_week_get",
+   "handler": "__function__:api_call",
+   "description": "Returns the card's current statement week and day, and whether it shares its statement with another card.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "url": {
+      "type": "string",
+      "default": "https://freya-bank-statement-mock.earthy-ink.workers.dev/voice/v1/statement.week.get"
+     },
+     "method": {
+      "type": "string",
+      "default": "POST"
+     },
+     "headers": {
+      "type": "object",
+      "properties": {
+       "Content-Type": {
+        "type": "string",
+        "default": "application/json"
+       }
+      }
+     },
+     "body": {
+      "type": "object",
+      "required": [
+       "cardNumber"
+      ],
+      "properties": {
+       "cardNumber": {
+        "type": "string",
+        "default": "{{cardNumber}}",
+        "description": "The card number exactly as cards.list returned it in cardNumber (masked, like 540000******1234). Never rebuilt from digits the caller says."
+       },
+       "lang": {
+        "type": "string",
+        "default": "tr"
+       }
+      }
+     }
+    }
+   }
+  },
+  "config": {
+   "timeoutMs": 12000,
+   "maxRetries": 0
+  },
+  "pre_process_code": "try:\n    _body = config.get('body')\n    if isinstance(_body, dict):\n        _nested = dict()\n        _moved = []\n        for _field, _parents in [['cardNumber', ['data']], ['lang', ['call']]]:\n            _moved.append(_field)\n            if _field in _body:\n                _at = _nested\n                for _parent in _parents:\n                    _at = _at.setdefault(_parent, dict())\n                _at[_field] = _body[_field]\n        for _field in _body:\n            if _field not in _moved and _field not in _nested:\n                _nested[_field] = _body[_field]\n        config['body'] = _nested\nexcept Exception:\n    pass\n"
+ },
+ "statement_week_decide": {
+  "type": "function",
+  "function": {
+   "name": "statement_week_decide",
+   "handler": "__function__:api_call",
+   "description": "Preview only: the statement date, due date and day the card would get with the requested week. It does not change the card.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "url": {
+      "type": "string",
+      "default": "https://freya-bank-statement-mock.earthy-ink.workers.dev/voice/v1/statement.week.decide"
+     },
+     "method": {
+      "type": "string",
+      "default": "POST"
+     },
+     "headers": {
+      "type": "object",
+      "properties": {
+       "Content-Type": {
+        "type": "string",
+        "default": "application/json"
+       }
+      }
+     },
+     "body": {
+      "type": "object",
+      "required": [
+       "cardNumber",
+       "newStatementWeek",
+       "statementDay"
+      ],
+      "properties": {
+       "cardNumber": {
+        "type": "string",
+        "default": "{{cardNumber}}",
+        "description": "The card number exactly as cards.list returned it in cardNumber (masked, like 540000******1234). Never rebuilt from digits the caller says."
+       },
+       "newStatementWeek": {
+        "type": "integer",
+        "enum": [
+         1,
+         2,
+         3,
+         4
+        ],
+        "default": "{{newStatementWeek}}",
+        "description": "The requested statement week, 1 to 4. Never the week the card already has."
+       },
+       "statementDay": {
+        "type": "integer",
+        "default": "{{statementDay}}",
+        "description": "The card's current statementDay from statement.week.get."
+       },
+       "lang": {
+        "type": "string",
+        "default": "tr"
+       }
+      }
+     }
+    }
+   }
+  },
+  "config": {
+   "timeoutMs": 12000,
+   "maxRetries": 0
+  },
+  "pre_process_code": "try:\n    _body = config.get('body')\n    if isinstance(_body, dict):\n        _nested = dict()\n        _moved = []\n        for _field, _parents in [['cardNumber', ['data']], ['newStatementWeek', ['data']], ['statementDay', ['data']], ['lang', ['call']]]:\n            _moved.append(_field)\n            if _field in _body:\n                _at = _nested\n                for _parent in _parents:\n                    _at = _at.setdefault(_parent, dict())\n                _at[_field] = _body[_field]\n        for _field in _body:\n            if _field not in _moved and _field not in _nested:\n                _nested[_field] = _body[_field]\n        config['body'] = _nested\nexcept Exception:\n    pass\n"
+ },
+ "statement_week_change": {
+  "type": "function",
+  "function": {
+   "name": "statement_week_change",
+   "handler": "__function__:api_call",
+   "description": "Changes the card's statement week. Only after the caller has agreed to the dates statement.week.decide returned. Has a side effect: never sent twice.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "url": {
+      "type": "string",
+      "default": "https://freya-bank-statement-mock.earthy-ink.workers.dev/voice/v1/statement.week.change"
+     },
+     "method": {
+      "type": "string",
+      "default": "POST"
+     },
+     "headers": {
+      "type": "object",
+      "properties": {
+       "Content-Type": {
+        "type": "string",
+        "default": "application/json"
+       }
+      }
+     },
+     "body": {
+      "type": "object",
+      "required": [
+       "cardNumber",
+       "newStatementWeek",
+       "statementDay"
+      ],
+      "properties": {
+       "cardNumber": {
+        "type": "string",
+        "default": "{{cardNumber}}",
+        "description": "The card number exactly as cards.list returned it in cardNumber (masked, like 540000******1234). Never rebuilt from digits the caller says."
+       },
+       "newStatementWeek": {
+        "type": "integer",
+        "enum": [
+         1,
+         2,
+         3,
+         4
+        ],
+        "default": "{{newStatementWeek}}",
+        "description": "The requested statement week, 1 to 4. Never the week the card already has."
+       },
+       "statementDay": {
+        "type": "integer",
+        "default": "{{statementDay}}",
+        "description": "The card's current statementDay from statement.week.get."
+       },
+       "lang": {
+        "type": "string",
+        "default": "tr"
+       }
+      }
+     }
+    }
+   }
+  },
+  "config": {
+   "timeoutMs": 12000,
+   "maxRetries": 0
+  },
+  "pre_process_code": "try:\n    _body = config.get('body')\n    if isinstance(_body, dict):\n        _nested = dict()\n        _moved = []\n        for _field, _parents in [['cardNumber', ['data']], ['newStatementWeek', ['data']], ['statementDay', ['data']], ['lang', ['call']]]:\n            _moved.append(_field)\n            if _field in _body:\n                _at = _nested\n                for _parent in _parents:\n                    _at = _at.setdefault(_parent, dict())\n                _at[_field] = _body[_field]\n        for _field in _body:\n            if _field not in _moved and _field not in _nested:\n                _nested[_field] = _body[_field]\n        config['body'] = _nested\nexcept Exception:\n    pass\n"
+ },
+ "contact_email_get": {
+  "type": "function",
+  "function": {
+   "name": "contact_email_get",
+   "handler": "__function__:api_call",
+   "description": "Returns the customer's registered e-mail address and phone.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "url": {
+      "type": "string",
+      "default": "https://freya-bank-statement-mock.earthy-ink.workers.dev/voice/v1/contact.email.get"
+     },
+     "method": {
+      "type": "string",
+      "default": "POST"
+     },
+     "headers": {
+      "type": "object",
+      "properties": {
+       "Content-Type": {
+        "type": "string",
+        "default": "application/json"
+       }
+      }
+     },
+     "body": {
+      "type": "object",
+      "required": [
+       "customerNo",
+       "intAddressInfoType"
+      ],
+      "properties": {
+       "customerNo": {
+        "type": "string",
+        "default": "{{customerNo}}",
+        "description": "The customer number the phone menu handed over with the call (8 digits)."
+       },
+       "intAddressInfoType": {
+        "type": "string",
+        "default": "E"
+       },
+       "lang": {
+        "type": "string",
+        "default": "tr"
+       }
+      }
+     }
+    }
+   }
+  },
+  "config": {
+   "timeoutMs": 12000,
+   "maxRetries": 0
+  },
+  "pre_process_code": "try:\n    _body = config.get('body')\n    if isinstance(_body, dict):\n        _nested = dict()\n        _moved = []\n        for _field, _parents in [['customerNo', ['data']], ['intAddressInfoType', ['data']], ['lang', ['call']]]:\n            _moved.append(_field)\n            if _field in _body:\n                _at = _nested\n                for _parent in _parents:\n                    _at = _at.setdefault(_parent, dict())\n                _at[_field] = _body[_field]\n        for _field in _body:\n            if _field not in _moved and _field not in _nested:\n                _nested[_field] = _body[_field]\n        config['body'] = _nested\nexcept Exception:\n    pass\n"
+ },
+ "statement_pdf_send": {
+  "type": "function",
+  "function": {
+   "name": "statement_pdf_send",
+   "handler": "__function__:api_call",
+   "description": "Sends the statement PDF by e-mail to the address in the request. Has a side effect: never sent twice.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "url": {
+      "type": "string",
+      "default": "https://freya-bank-statement-mock.earthy-ink.workers.dev/voice/v1/statement.pdf.send"
+     },
+     "method": {
+      "type": "string",
+      "default": "POST"
+     },
+     "headers": {
+      "type": "object",
+      "properties": {
+       "Content-Type": {
+        "type": "string",
+        "default": "application/json"
+       }
+      }
+     },
+     "body": {
+      "type": "object",
+      "required": [
+       "customerNo",
+       "cardNumber",
+       "currencyType",
+       "statementDate",
+       "emailAddress"
+      ],
+      "properties": {
+       "customerNo": {
+        "type": "string",
+        "default": "{{customerNo}}",
+        "description": "The customer number the phone menu handed over with the call (8 digits)."
+       },
+       "cardNumber": {
+        "type": "string",
+        "default": "{{cardNumber}}",
+        "description": "The card number exactly as cards.list returned it in cardNumber (masked, like 540000******1234). Never rebuilt from digits the caller says."
+       },
+       "currencyType": {
+        "type": "string",
+        "enum": [
+         "TL",
+         "USD",
+         "EUR",
+         "GBP"
+        ],
+        "default": "{{currencyType}}"
+       },
+       "statementDate": {
+        "type": "string",
+        "default": "{{statementDate}}",
+        "description": "the statementDate from cards.balance, dd.MM.yyyy"
+       },
+       "emailAddress": {
+        "type": "string",
+        "default": "{{emailAddress}}",
+        "description": "the address the statement is sent to"
+       },
+       "lang": {
+        "type": "string",
+        "default": "tr"
+       }
+      }
+     }
+    }
+   }
+  },
+  "config": {
+   "timeoutMs": 12000,
+   "maxRetries": 0
+  },
+  "pre_process_code": "try:\n    _body = config.get('body')\n    if isinstance(_body, dict):\n        _nested = dict()\n        _moved = []\n        for _field, _parents in [['customerNo', ['data']], ['cardNumber', ['data']], ['currencyType', ['data']], ['statementDate', ['data']], ['emailAddress', ['data']], ['lang', ['call']]]:\n            _moved.append(_field)\n            if _field in _body:\n                _at = _nested\n                for _parent in _parents:\n                    _at = _at.setdefault(_parent, dict())\n                _at[_field] = _body[_field]\n        for _field in _body:\n            if _field not in _moved and _field not in _nested:\n                _nested[_field] = _body[_field]\n        config['body'] = _nested\nexcept Exception:\n    pass\n"
+ }
+}

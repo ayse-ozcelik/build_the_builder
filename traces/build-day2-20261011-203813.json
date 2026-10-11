@@ -1,0 +1,68 @@
+{
+  "started_at": "2026-10-11T17:38:13+00:00",
+  "ended_at": "2026-10-11T18:07:59+00:00",
+  "duration_seconds": 1785.6,
+  "status": "ok",
+  "brief": "final/day2",
+  "tool_api": "mock/openapi.json",
+  "model_calls": [
+    {
+      "at": "2026-10-11T17:38:13+00:00",
+      "model": "claude-opus-5-5",
+      "purpose": "read the brief files and write the structured rule list (spec)"
+    },
+    {
+      "at": "2026-10-11T17:43:23+00:00",
+      "model": "claude-opus-5-5",
+      "purpose": "write the workflow script from spec and tools"
+    }
+  ],
+  "workflows": [
+    {
+      "at": "2026-10-11T18:07:59+00:00",
+      "workflow_id": "fa765caf-987d-4d19-8353-4611cbb0bdd4",
+      "agent_id": "dadb25c6-fec0-41b0-8874-b1644dda388a",
+      "step_count": 93,
+      "tool_count": 2
+    }
+  ],
+  "self_tests": [
+    {
+      "at": "2026-10-11T18:07:59+00:00",
+      "name": "every limit of the spec is accounted for",
+      "passed": true,
+      "detail": "13 limits; left to the prompt: none"
+    }
+  ],
+  "notes": [
+    {
+      "at": "2026-10-11T17:38:13+00:00",
+      "message": "workspace: a temporary folder holding only .claude, briefs, builder, feedback, kit, out, tool_api"
+    },
+    {
+      "at": "2026-10-11T17:43:23+00:00",
+      "message": "tools_gen: 7 tools (cards_list, cards_balance, statement_week_get, statement_week_decide, statement_week_change, contact_email_get, statement_pdf_send)"
+    },
+    {
+      "at": "2026-10-11T17:43:23+00:00",
+      "message": "extract: 11 stages, 13 limits (tries_per_question, card_selection_tries, card_digits_tries, week_confirmation_tries, out_of_scope_question_tries, silence, calming_replies, statement_email_sends, statement_week_change_per_year, statement_week_change_call, example_card_names, offer_not_repeated, token_retry_on_401), 15 endings"
+    },
+    {
+      "at": "2026-10-11T18:07:59+00:00",
+      "message": "no practice customers given: the agent was saved without a customer test"
+    },
+    {
+      "at": "2026-10-11T18:07:59+00:00",
+      "message": "model sessions cost $5.46"
+    },
+    {
+      "at": "2026-10-11T18:07:59+00:00",
+      "message": "exported to submission/day2.workflow.json"
+    }
+  ],
+  "summary": {
+    "model_call_count": 2,
+    "self_tests_passed": 1,
+    "self_tests_total": 1
+  }
+}
