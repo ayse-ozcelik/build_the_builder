@@ -1,6 +1,10 @@
 """The builder: brief files + tool API file in, phone agent on Freya out. One command, no manual step.
 
     python builder/with_env.py python builder/build.py <brief.md> [<more briefs>...] --tools <openapi.json> [--test-brief A]
+    python builder/with_env.py python builder/build.py <case folder> [--tools <openapi.json>]
+
+A case folder is taken whole, with its subfolders: every file in it is a brief file. Without --tools the
+tool API file is the one OpenAPI file (*.json with "openapi" and "paths") found in the folder.
 
 Steps:
 1. workspace: a new temporary folder with ONLY the brief files, the tool API file, the skills,
@@ -42,11 +46,14 @@ FILE_TOOLS = ["Read", "Write", "Edit", "Glob", "Grep"]
 BLOCKED_TOOLS = ["Bash", "PowerShell", "WebFetch", "WebSearch", "Agent", "Task", "NotebookEdit"]
 WORKSPACE_SETTINGS = {"permissions": {"blockReadsOutsideWorkingDirectories": True, "deny": BLOCKED_TOOLS}}
 SECRET_PREFIXES = ("FREYA_", "ANTHROPIC_")
+LARGE_FILE_BYTES = 150 * 1024  # a file above this is data to look things up in, not a text to read from end to end
+LARGE_NOTE = ("\n- LARGE DATA FILES in briefs/ (do not read them whole: they are data; read the first lines to see the"
+              " shape and search them with Grep when you need one record): {names}")
 
 COMPILE_PROMPT = """Use the freya-phone-agent skill to build a phone agent.
 
 This folder holds everything you may use. There is nothing else, and you have no shell:
-- briefs/: the brief files, in this order (a later file changes an earlier one): {briefs}
+- briefs/: the brief files, {order}: {briefs}{large}
 - {tools_api}: the tool API file
 - spec.json: the rule list already extracted from the brief files, with every limit
 - tools.json: the Freya tool definitions already generated from the tool API file
@@ -56,7 +63,10 @@ This folder holds everything you may use. There is nothing else, and you have no
 WRITE out/make_workflow.py. The builder runs it as `python out/make_workflow.py` from this folder.
 It must write out/workflow.json and out/limits_applied.json, with paths taken from its own location.
 - Load the tools from tools.json. Never retype a field name or an allowed value. On top of a loaded
-  tool you may set the description, hooks, response_mapping and config.
+  tool you may set the description, hooks, response_mapping and config, and the default of a body field
+  (a call variable as {{{{name}}}}, or a fixed value) so that the workflow fills it instead of the model.
+  A loaded tool may already have pre_process_code: it puts the flat body fields into the nested body the
+  API expects. Keep that code as the LAST part of the tool's pre_process_code; put your own code before it.
 - Apply EVERY limit in spec.json "limits" with builder/limits.py (apply_tool_limit when a tool result
   shows the counted event, add_counted_step when the counted thing is something the agent says or does).
   Where n depends on a condition, or the counted thing is something the caller does, count it in code
@@ -87,12 +97,48 @@ Find the cause, then fix out/make_workflow.py. Prefer a fix in the structure or 
 sentence in a prompt. Do not break what passed."""
 
 
+def brief_files(paths):
+    """The brief files behind the arguments: [(file, name inside briefs/)]. A folder gives every file in it."""
+    found = []
+    for path in paths:
+        if not os.path.isdir(path):
+            found.append((path, os.path.basename(path)))
+            continue
+        for folder, subfolders, names in os.walk(path):
+            subfolders[:] = sorted(d for d in subfolders if not d.startswith(".") and d != "node_modules")
+            for name in sorted(names):
+                if not name.startswith("."):
+                    full = os.path.join(folder, name)
+                    found.append((full, os.path.relpath(full, path).replace(os.sep, "/")))
+    return found
+
+
+def find_tool_api(paths):
+    """The one OpenAPI file inside the given folders. Raises ValueError when there is none or more than one."""
+    found = []
+    for full, _ in brief_files([p for p in paths if os.path.isdir(p)]):
+        if full.lower().endswith(".json"):
+            try:
+                with open(full, encoding="utf-8") as f:
+                    data = json.load(f)
+            except (OSError, ValueError):
+                continue
+            if isinstance(data, dict) and "openapi" in data and "paths" in data:
+                found.append(full)
+    if len(found) != 1:
+        raise ValueError("--tools is needed: %d OpenAPI files found in the case folder%s" % (
+            len(found), (" (" + ", ".join(found) + ")") if found else ""))
+    return found[0]
+
+
 def make_workspace(briefs, tool_api):
-    """A new folder with only what the model may see. Returns (path, brief names, tool api name)."""
+    """A new folder with only what the model may see. `briefs` is the list brief_files() gives."""
     ws = tempfile.mkdtemp(prefix="freya-build-")
     os.makedirs(os.path.join(ws, "briefs"))
-    for brief in briefs:
-        shutil.copy(brief, os.path.join(ws, "briefs", os.path.basename(brief)))
+    for brief, name in briefs:
+        target = os.path.join(ws, "briefs", name.replace("/", os.sep))
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        shutil.copy(brief, target)
     os.makedirs(os.path.join(ws, "tool_api"))
     shutil.copy(tool_api, os.path.join(ws, "tool_api", os.path.basename(tool_api)))
     shutil.copytree(os.path.join(ROOT, ".claude", "skills"), os.path.join(ws, ".claude", "skills"))
@@ -248,14 +294,18 @@ def write_feedback(ws, n, test, freya):
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Build a Freya phone agent from brief files.")
     parser.add_argument("briefs", nargs="+")
-    parser.add_argument("--tools", required=True, help="the tool API file (openapi.json)")
+    parser.add_argument("--tools", default="", help="the tool API file (openapi.json); may be left out when a case folder holds exactly one")
     parser.add_argument("--test-brief", default="", help="practice cases to self-test on: A, B, or 'all'. Empty: no practice test")
     parser.add_argument("--max-tests", type=int, default=3)
     parser.add_argument("--keep-workspace", action="store_true")
     args = parser.parse_args(argv)
 
     started = time.time()
-    label = os.path.splitext(os.path.basename(args.briefs[-1]))[0]
+    folder = any(os.path.isdir(b) for b in args.briefs)
+    if not args.tools:
+        args.tools = find_tool_api(args.briefs)
+    label = os.path.splitext(os.path.basename(os.path.abspath(args.briefs[-1])))[0]
+    files = brief_files(args.briefs)
     run_dir = os.path.join(ROOT, "build", label)
     if os.path.exists(run_dir):
         shutil.rmtree(run_dir)
@@ -264,21 +314,28 @@ def main(argv=None):
     trace = Trace(brief_path=", ".join(rel(b) for b in args.briefs), tool_api_path=rel(args.tools),
                   name="build-%s-%s" % (label, time.strftime("%Y%m%d-%H%M%S")))
     log_path = trace.path.replace(".json", ".messages.jsonl")
-    ws = make_workspace(args.briefs, args.tools)
-    ws_briefs = ["briefs/" + os.path.basename(b) for b in args.briefs]
+    ws = make_workspace(files, args.tools)
+    large = ["briefs/" + name for full, name in files if os.path.getsize(full) > LARGE_FILE_BYTES]
+    ws_briefs = ["briefs/" + name for _, name in files if "briefs/" + name not in large]
+    # a folder has no order of its own: there the documents' own dates decide which one is newer
+    order = ("a folder in no particular order (when two disagree, the later-dated document wins)" if folder
+             else "in this order (a later file changes an earlier one)")
     ws_tool_api = "tool_api/" + os.path.basename(args.tools)
     trace.note("workspace: a temporary folder holding only %s" % ", ".join(sorted(os.listdir(ws))))
     status = "failed"
     try:
         # tools and spec
         warnings = []
-        tools = tools_gen.generate_tools(tools_gen.load_spec(args.tools), warnings=warnings)
+        spec = extract_step.extract(ws_briefs, ws_tool_api, model=MODEL, trace=trace, cwd=ws, ordered=not folder, large=large)
+        with open(os.path.join(ws, "spec.json"), "w", encoding="utf-8") as f:
+            json.dump(spec, f, indent=1, ensure_ascii=False)
+        # a tool field named like a call variable is filled by the platform, whatever this brief calls its variables
+        given = tuple(v.get("name") for v in spec.get("call_variables") or [] if isinstance(v, dict) and v.get("name"))
+        tools = tools_gen.generate_tools(tools_gen.load_spec(args.tools), warnings=warnings,
+                                         context_vars=tuple(dict.fromkeys(tools_gen.CONTEXT_VARS + given)))
         with open(os.path.join(ws, "tools.json"), "w", encoding="utf-8") as f:
             json.dump(tools, f, indent=1)
         trace.note("tools_gen: %d tools (%s)%s" % (len(tools), ", ".join(tools), "; warnings: " + "; ".join(warnings) if warnings else ""))
-        spec = extract_step.extract(ws_briefs, ws_tool_api, model=MODEL, trace=trace, cwd=ws)
-        with open(os.path.join(ws, "spec.json"), "w", encoding="utf-8") as f:
-            json.dump(spec, f, indent=1, ensure_ascii=False)
         trace.note("extract: %d stages, %d limits (%s), %d endings" % (
             len(spec["stages"]), len(spec["limits"]), ", ".join(l["id"] for l in spec["limits"]), len(spec["endings"])))
         print("spec: %d stages, %d limits, %d endings" % (len(spec["stages"]), len(spec["limits"]), len(spec["endings"])), flush=True)
@@ -286,7 +343,8 @@ def main(argv=None):
         sys.path.insert(0, KIT)
         import freya
         compiler = Compiler(ws, log_path, trace)
-        prompt, purpose = COMPILE_PROMPT.format(briefs=", ".join(ws_briefs), tools_api=ws_tool_api), "write the workflow script from spec and tools"
+        prompt, purpose = COMPILE_PROMPT.format(briefs=", ".join(ws_briefs), order=order, tools_api=ws_tool_api,
+                                                large=LARGE_NOTE.format(names=", ".join(large)) if large else ""), "write the workflow script from spec and tools"
         best, tests, ids, applied = None, 0, None, []
         while True:
             compiler.ask(prompt, purpose)

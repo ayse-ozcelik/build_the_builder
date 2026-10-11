@@ -1,0 +1,1843 @@
+{
+ "openapi": "3.0.3",
+ "info": {
+  "title": "Freya Bank voice assistant: statement and debt services (mock)",
+  "version": "2026-10-01",
+  "description": "Our mock of the seven services of the bank's service contract of 1 October 2026. Every service is POST with {data, call}; every answer has result, successful ones also data."
+ },
+ "servers": [
+  {
+   "url": "https://freya-bank-statement-mock.earthy-ink.workers.dev"
+  }
+ ],
+ "paths": {
+  "/voice/v1/cards.list": {
+   "post": {
+    "operationId": "cards_list",
+    "summary": "Returns the customer's cards the assistant may talk about. The first service of every call.",
+    "description": "Returns the customer's cards the assistant may talk about. The first service of every call.",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "data"
+        ],
+        "properties": {
+         "data": {
+          "type": "object",
+          "required": [
+           "customerNo"
+          ],
+          "properties": {
+           "customerNo": {
+            "type": "string",
+            "description": "The customer number the phone menu handed over with the call (8 digits)."
+           },
+           "aiFlow": {
+            "type": "string",
+            "default": "CardOps"
+           }
+          }
+         },
+         "call": {
+          "type": "object",
+          "description": "Call metadata the bank logs; nothing depends on it.",
+          "properties": {
+           "lang": {
+            "type": "string",
+            "default": "tr"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Success",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "type": "object",
+           "properties": {
+            "cards": {
+             "type": "array",
+             "description": "Only active cards. Two cards can have the same productName and the same cardNumberLast4.",
+             "items": {
+              "type": "object",
+              "properties": {
+               "cardNumber": {
+                "type": "string"
+               },
+               "cardNumberLast4": {
+                "type": "string"
+               },
+               "productName": {
+                "type": "string",
+                "description": "free text from the card system"
+               },
+               "status": {
+                "type": "string"
+               },
+               "isMainCard": {
+                "type": "boolean"
+               }
+              }
+             }
+            },
+            "validCardsCount": {
+             "type": "integer"
+            },
+            "exitState": {
+             "type": "string",
+             "enum": [
+              "1_CARD",
+              "MULTI_CARD"
+             ]
+            }
+           }
+          },
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "INVALID_ARGUMENTS_ERROR: a required field is missing or empty",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "FBE00099: technical error on the bank's side",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "FB_IVR_CHANNEL_102 (WARNING): the customer has no card the assistant can work with",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/voice/v1/cards.balance": {
+   "post": {
+    "operationId": "cards_balance",
+    "summary": "Returns the statement date, the due date and the debt per currency of one card.",
+    "description": "Returns the statement date, the due date and the debt per currency of one card.",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "data"
+        ],
+        "properties": {
+         "data": {
+          "type": "object",
+          "required": [
+           "cardNumber"
+          ],
+          "properties": {
+           "cardNumber": {
+            "type": "string",
+            "description": "The card number exactly as cards.list returned it in cardNumber (masked, like 540000******1234). Never rebuilt from digits the caller says."
+           }
+          }
+         },
+         "call": {
+          "type": "object",
+          "description": "Call metadata the bank logs; nothing depends on it.",
+          "properties": {
+           "lang": {
+            "type": "string",
+            "default": "tr"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Success",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "type": "object",
+           "properties": {
+            "cardNumber": {
+             "type": "string",
+             "description": "masked differently from cards.list; do not match on it"
+            },
+            "cardNumberLast4": {
+             "type": "string"
+            },
+            "productName": {
+             "type": "string"
+            },
+            "statementDate": {
+             "type": "string",
+             "description": "dd.MM.yyyy"
+            },
+            "lastPayDate": {
+             "type": "string",
+             "description": "dd.MM.yyyy"
+            },
+            "nextStatementDate": {
+             "type": "string",
+             "description": "dd.MM.yyyy"
+            },
+            "nextLastPayDate": {
+             "type": "string",
+             "description": "dd.MM.yyyy"
+            },
+            "debtTL": {
+             "type": "object",
+             "description": "One block per currency. A block can be missing; a missing block is not a block with NO_DEBT.",
+             "properties": {
+              "transferAmount": {
+               "type": "number"
+              },
+              "statementDebt": {
+               "type": "number"
+              },
+              "minPayment": {
+               "type": "number"
+              },
+              "remainingDebt": {
+               "type": "number"
+              },
+              "remainingMinPayment": {
+               "type": "number"
+              },
+              "currentPeriodExpense": {
+               "type": "number"
+              },
+              "totalDebt": {
+               "type": "number"
+              },
+              "remainAutomaticPaymentAmount": {
+               "type": "number"
+              },
+              "statementPaymentStatus": {
+               "type": "string",
+               "enum": [
+                "HAS_DEBT",
+                "NO_DEBT"
+               ]
+              },
+              "totalDebtPaymentStatus": {
+               "type": "string",
+               "enum": [
+                "HAS_DEBT",
+                "NO_DEBT"
+               ]
+              }
+             }
+            },
+            "debtUSD": {
+             "type": "object",
+             "description": "One block per currency. A block can be missing; a missing block is not a block with NO_DEBT.",
+             "properties": {
+              "transferAmount": {
+               "type": "number"
+              },
+              "statementDebt": {
+               "type": "number"
+              },
+              "minPayment": {
+               "type": "number"
+              },
+              "remainingDebt": {
+               "type": "number"
+              },
+              "remainingMinPayment": {
+               "type": "number"
+              },
+              "currentPeriodExpense": {
+               "type": "number"
+              },
+              "totalDebt": {
+               "type": "number"
+              },
+              "remainAutomaticPaymentAmount": {
+               "type": "number"
+              },
+              "statementPaymentStatus": {
+               "type": "string",
+               "enum": [
+                "HAS_DEBT",
+                "NO_DEBT"
+               ]
+              },
+              "totalDebtPaymentStatus": {
+               "type": "string",
+               "enum": [
+                "HAS_DEBT",
+                "NO_DEBT"
+               ]
+              }
+             }
+            },
+            "debtEUR": {
+             "type": "object",
+             "description": "One block per currency. A block can be missing; a missing block is not a block with NO_DEBT.",
+             "properties": {
+              "transferAmount": {
+               "type": "number"
+              },
+              "statementDebt": {
+               "type": "number"
+              },
+              "minPayment": {
+               "type": "number"
+              },
+              "remainingDebt": {
+               "type": "number"
+              },
+              "remainingMinPayment": {
+               "type": "number"
+              },
+              "currentPeriodExpense": {
+               "type": "number"
+              },
+              "totalDebt": {
+               "type": "number"
+              },
+              "remainAutomaticPaymentAmount": {
+               "type": "number"
+              },
+              "statementPaymentStatus": {
+               "type": "string",
+               "enum": [
+                "HAS_DEBT",
+                "NO_DEBT"
+               ]
+              },
+              "totalDebtPaymentStatus": {
+               "type": "string",
+               "enum": [
+                "HAS_DEBT",
+                "NO_DEBT"
+               ]
+              }
+             }
+            },
+            "debtGBP": {
+             "type": "object",
+             "description": "One block per currency. A block can be missing; a missing block is not a block with NO_DEBT.",
+             "properties": {
+              "transferAmount": {
+               "type": "number"
+              },
+              "statementDebt": {
+               "type": "number"
+              },
+              "minPayment": {
+               "type": "number"
+              },
+              "remainingDebt": {
+               "type": "number"
+              },
+              "remainingMinPayment": {
+               "type": "number"
+              },
+              "currentPeriodExpense": {
+               "type": "number"
+              },
+              "totalDebt": {
+               "type": "number"
+              },
+              "remainAutomaticPaymentAmount": {
+               "type": "number"
+              },
+              "statementPaymentStatus": {
+               "type": "string",
+               "enum": [
+                "HAS_DEBT",
+                "NO_DEBT"
+               ]
+              },
+              "totalDebtPaymentStatus": {
+               "type": "string",
+               "enum": [
+                "HAS_DEBT",
+                "NO_DEBT"
+               ]
+              }
+             }
+            },
+            "statementPaymentStatus": {
+             "type": "string",
+             "enum": [
+              "HAS_DEBT",
+              "NO_DEBT"
+             ]
+            },
+            "totalDebtPaymentStatus": {
+             "type": "string",
+             "enum": [
+              "HAS_DEBT",
+              "NO_DEBT"
+             ]
+            },
+            "automaticPaymentFlag": {
+             "type": "string",
+             "enum": [
+              "Y",
+              "N"
+             ]
+            }
+           }
+          },
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "INVALID_ARGUMENTS_ERROR: a required field is missing or empty",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "FBE00099: technical error on the bank's side",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "FB_IVR_CHANNEL_120 (WARNING): card not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/voice/v1/statement.week.get": {
+   "post": {
+    "operationId": "statement_week_get",
+    "summary": "Returns the card's current statement week and day, and whether it shares its statement with another card.",
+    "description": "Returns the card's current statement week and day, and whether it shares its statement with another card.",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "data"
+        ],
+        "properties": {
+         "data": {
+          "type": "object",
+          "required": [
+           "cardNumber"
+          ],
+          "properties": {
+           "cardNumber": {
+            "type": "string",
+            "description": "The card number exactly as cards.list returned it in cardNumber (masked, like 540000******1234). Never rebuilt from digits the caller says."
+           }
+          }
+         },
+         "call": {
+          "type": "object",
+          "description": "Call metadata the bank logs; nothing depends on it.",
+          "properties": {
+           "lang": {
+            "type": "string",
+            "default": "tr"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Success",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "type": "object",
+           "properties": {
+            "cardNumber": {
+             "type": "string"
+            },
+            "cardNumberLast4": {
+             "type": "string"
+            },
+            "productName": {
+             "type": "string"
+            },
+            "statementWeek": {
+             "type": "integer",
+             "description": "1 to 4"
+            },
+            "statementDay": {
+             "type": "integer"
+            },
+            "statementDate": {
+             "type": "string",
+             "description": "dd.MM.yyyy"
+            },
+            "lastPayDate": {
+             "type": "string",
+             "description": "dd.MM.yyyy"
+            },
+            "nextStatementDate": {
+             "type": "string",
+             "description": "dd.MM.yyyy"
+            },
+            "nextLastPayDate": {
+             "type": "string",
+             "description": "dd.MM.yyyy"
+            },
+            "relationType": {
+             "type": "string",
+             "description": "empty: own statement. M: main card of a shared statement. C: the card linked to it."
+            },
+            "relatedCardNumber": {
+             "type": "string"
+            },
+            "relatedCardProductName": {
+             "type": "string"
+            }
+           }
+          },
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "INVALID_ARGUMENTS_ERROR: a required field is missing or empty",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "FBE00099: technical error on the bank's side",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "FB_IVR_CHANNEL_121 (WARNING): card not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/voice/v1/statement.week.decide": {
+   "post": {
+    "operationId": "statement_week_decide",
+    "summary": "Preview only: the statement date, due date and day the card would get with the requested week. It does not change the card.",
+    "description": "Preview only: the statement date, due date and day the card would get with the requested week. It does not change the card.",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "data"
+        ],
+        "properties": {
+         "data": {
+          "type": "object",
+          "required": [
+           "cardNumber",
+           "newStatementWeek",
+           "statementDay"
+          ],
+          "properties": {
+           "cardNumber": {
+            "type": "string",
+            "description": "The card number exactly as cards.list returned it in cardNumber (masked, like 540000******1234). Never rebuilt from digits the caller says."
+           },
+           "newStatementWeek": {
+            "type": "integer",
+            "enum": [
+             1,
+             2,
+             3,
+             4
+            ],
+            "description": "The requested statement week, 1 to 4. Never the week the card already has."
+           },
+           "statementDay": {
+            "type": "integer",
+            "description": "The card's current statementDay from statement.week.get."
+           }
+          }
+         },
+         "call": {
+          "type": "object",
+          "description": "Call metadata the bank logs; nothing depends on it.",
+          "properties": {
+           "lang": {
+            "type": "string",
+            "default": "tr"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Success",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "type": "object",
+           "properties": {
+            "statementDate": {
+             "type": "string",
+             "description": "dd.MM.yyyy"
+            },
+            "statementDueDate": {
+             "type": "string",
+             "description": "dd.MM.yyyy"
+            },
+            "statementDay": {
+             "type": "integer"
+            },
+            "responseCode": {
+             "type": "integer",
+             "description": "0 = fine"
+            },
+            "responseMessage": {
+             "type": "string"
+            }
+           }
+          },
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "INVALID_ARGUMENTS_ERROR: a required field is missing or empty",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "FBE00099: technical error on the bank's side",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/voice/v1/statement.week.change": {
+   "post": {
+    "operationId": "statement_week_change",
+    "summary": "Changes the card's statement week. Only after the caller has agreed to the dates statement.week.decide returned. Has a side effect: never sent twice.",
+    "description": "Changes the card's statement week. Only after the caller has agreed to the dates statement.week.decide returned. Has a side effect: never sent twice.",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "data"
+        ],
+        "properties": {
+         "data": {
+          "type": "object",
+          "required": [
+           "cardNumber",
+           "newStatementWeek",
+           "statementDay"
+          ],
+          "properties": {
+           "cardNumber": {
+            "type": "string",
+            "description": "The card number exactly as cards.list returned it in cardNumber (masked, like 540000******1234). Never rebuilt from digits the caller says."
+           },
+           "newStatementWeek": {
+            "type": "integer",
+            "enum": [
+             1,
+             2,
+             3,
+             4
+            ],
+            "description": "The requested statement week, 1 to 4. Never the week the card already has."
+           },
+           "statementDay": {
+            "type": "integer",
+            "description": "The card's current statementDay from statement.week.get."
+           }
+          }
+         },
+         "call": {
+          "type": "object",
+          "description": "Call metadata the bank logs; nothing depends on it.",
+          "properties": {
+           "lang": {
+            "type": "string",
+            "default": "tr"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Success",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "type": "object",
+           "properties": {
+            "responseCode": {
+             "type": "integer",
+             "description": "0 = fine"
+            },
+            "responseMessage": {
+             "type": "string"
+            },
+            "statementWeek": {
+             "type": "string"
+            },
+            "statementDay": {
+             "type": "string",
+             "description": "ignore; the dates to tell the caller are those of statement.week.decide"
+            },
+            "exitState": {
+             "type": "string",
+             "description": "OK on success"
+            }
+           }
+          },
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "INVALID_ARGUMENTS_ERROR: a required field is missing or empty",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "FBE00099: technical error on the bank's side",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "token missing or expired",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/voice/v1/contact.email.get": {
+   "post": {
+    "operationId": "contact_email_get",
+    "summary": "Returns the customer's registered e-mail address and phone.",
+    "description": "Returns the customer's registered e-mail address and phone.",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "data"
+        ],
+        "properties": {
+         "data": {
+          "type": "object",
+          "required": [
+           "customerNo",
+           "intAddressInfoType"
+          ],
+          "properties": {
+           "customerNo": {
+            "type": "string",
+            "description": "The customer number the phone menu handed over with the call (8 digits)."
+           },
+           "intAddressInfoType": {
+            "type": "string",
+            "default": "E"
+           }
+          }
+         },
+         "call": {
+          "type": "object",
+          "description": "Call metadata the bank logs; nothing depends on it.",
+          "properties": {
+           "lang": {
+            "type": "string",
+            "default": "tr"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Success",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "type": "object",
+           "properties": {
+            "communicationType": {
+             "type": "string"
+            },
+            "ibanCountryCode": {
+             "type": "string"
+            },
+            "ibanAreaCode": {
+             "type": "string"
+            },
+            "ibanPhoneNum": {
+             "type": "string"
+            },
+            "ibanEmail": {
+             "type": "string",
+             "description": "the registered e-mail address; empty when none is registered"
+            },
+            "ttsEmail": {
+             "type": "string"
+            },
+            "commGramType": {
+             "type": "string"
+            },
+            "exitState": {
+             "type": "string"
+            }
+           }
+          },
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "INVALID_ARGUMENTS_ERROR: a required field is missing or empty",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "FBE00099: technical error on the bank's side",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/voice/v1/statement.pdf.send": {
+   "post": {
+    "operationId": "statement_pdf_send",
+    "summary": "Sends the statement PDF by e-mail to the address in the request. Has a side effect: never sent twice.",
+    "description": "Sends the statement PDF by e-mail to the address in the request. Has a side effect: never sent twice.",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "data"
+        ],
+        "properties": {
+         "data": {
+          "type": "object",
+          "required": [
+           "customerNo",
+           "cardNumber",
+           "currencyType",
+           "statementDate",
+           "emailAddress"
+          ],
+          "properties": {
+           "customerNo": {
+            "type": "string",
+            "description": "The customer number the phone menu handed over with the call (8 digits)."
+           },
+           "cardNumber": {
+            "type": "string",
+            "description": "The card number exactly as cards.list returned it in cardNumber (masked, like 540000******1234). Never rebuilt from digits the caller says."
+           },
+           "currencyType": {
+            "type": "string",
+            "enum": [
+             "TL",
+             "USD",
+             "EUR",
+             "GBP"
+            ]
+           },
+           "statementDate": {
+            "type": "string",
+            "description": "the statementDate from cards.balance, dd.MM.yyyy"
+           },
+           "emailAddress": {
+            "type": "string",
+            "description": "the address the statement is sent to"
+           }
+          }
+         },
+         "call": {
+          "type": "object",
+          "description": "Call metadata the bank logs; nothing depends on it.",
+          "properties": {
+           "lang": {
+            "type": "string",
+            "default": "tr"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Success",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "data": {
+           "type": "object",
+           "properties": {
+            "exitState": {
+             "type": "string",
+             "description": "DONE on success"
+            }
+           }
+          },
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "INVALID_ARGUMENTS_ERROR: a required field is missing or empty",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "FBE00099: technical error on the bank's side",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "FB_IVR_CHANNEL_107 (WARNING): no statement document to send",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "result": {
+           "type": "object",
+           "description": "Present in every answer. Success = HTTP 200 and returnCode \"1\". Anything else is an error; an error answer has no data object. messageText is for logs and is not read to the caller.",
+           "properties": {
+            "guid": {
+             "type": "string"
+            },
+            "returnCode": {
+             "type": "string"
+            },
+            "messageText": {
+             "type": "string"
+            },
+            "code": {
+             "type": "string"
+            },
+            "message": {
+             "type": "string"
+            },
+            "type": {
+             "type": "string",
+             "description": "ERROR or WARNING on errors"
+            },
+            "details": {
+             "type": "object"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+}

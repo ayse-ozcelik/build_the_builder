@@ -22,3 +22,4 @@
 {"at": "2026-10-11 16:48:40", "agent_id": "dadb25c6-fec0-41b0-8874-b1644dda388a", "brief": "A", "runs": 1, "passed": 10, "total": 10, "seconds": 216, "failed": []}
 {"at": "2026-10-11 16:55:22", "agent_id": "dadb25c6-fec0-41b0-8874-b1644dda388a", "brief": null, "runs": 1, "passed": 10, "total": 13, "seconds": 380, "failed": ["PUB-05", "PUB-08", "PUB-11"]}
 {"at": "2026-10-11 16:57:31", "agent_id": "dadb25c6-fec0-41b0-8874-b1644dda388a", "brief": null, "runs": 1, "passed": 1, "total": 1, "seconds": 103, "failed": []}
+{"at": "2026-10-11 17:17:26", "agent_id": "dadb25c6-fec0-41b0-8874-b1644dda388a", "brief": null, "runs": 3, "passed": 9, "total": 13, "seconds": 648, "failed": ["PUB-01", "PUB-05", "PUB-08", "PUB-12"]}

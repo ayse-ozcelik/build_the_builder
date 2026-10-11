@@ -23,8 +23,8 @@ COUNTED_EVENTS = ("tool_result", "agent_action", "caller_action")
 
 PROMPT = """You are preparing the rule list for a phone agent. Read every one of these files completely:
 
-BRIEF FILES (in this order; when two disagree, the later file or the later-dated document wins):
-{briefs}
+BRIEF FILES ({order}):
+{briefs}{large}
 
 TOOL API FILE:
 {tools}
@@ -114,8 +114,9 @@ def validate(spec, tool_api):
     problems = []
     responses, enums = response_fields(tool_api), request_enums(tool_api)
     for key in ("stages", "limits", "endings"):
-        if not isinstance(spec.get(key), list) or not spec[key]:
-            problems.append("'%s' is missing or empty" % key)
+        # a call can have no counted limit and no closing tool; it cannot have no stages
+        if not isinstance(spec.get(key), list) or (key == "stages" and not spec[key]):
+            problems.append("'%s' is missing%s" % (key, " or empty" if key == "stages" else ""))
     seen = set()
     for limit in spec.get("limits") or []:
         name = limit.get("id") or "?"
@@ -142,6 +143,8 @@ def validate(spec, tool_api):
                 problems.append("stage %s: tool %r is not in the tool API file" % (stage.get("id"), tool))
     for ending in spec.get("endings") or []:
         tool = ending.get("tool")
+        if not tool:
+            continue  # a call can end without a tool call (handed back, or simply ended)
         if tool not in responses:
             problems.append("ending %r: tool %r is not in the tool API file" % (ending.get("when"), tool))
             continue
@@ -167,7 +170,7 @@ async def _ask(prompt, model, on_message=None, cwd=None):
     return answer
 
 
-def extract(brief_paths, tool_api_path, model=DEFAULT_MODEL, trace=None, on_message=None, cwd=None):
+def extract(brief_paths, tool_api_path, model=DEFAULT_MODEL, trace=None, on_message=None, cwd=None, ordered=True, large=()):
     """Run the model, check its answer, return the spec. Raises ValueError with the problems found.
 
     With `cwd` (a build workspace) the paths are relative to it and the model works inside it.
@@ -175,7 +178,11 @@ def extract(brief_paths, tool_api_path, model=DEFAULT_MODEL, trace=None, on_mess
     shown = (lambda p: p.replace("\\", "/")) if cwd else os.path.abspath
     with open(os.path.join(cwd, tool_api_path) if cwd else tool_api_path, encoding="utf-8") as f:
         tool_api = json.load(f)
-    prompt = PROMPT.format(briefs="\n".join("- " + shown(p) for p in brief_paths), tools="- " + shown(tool_api_path))
+    order = ("in this order; when two disagree, the later file or the later-dated document wins" if ordered
+             else "a folder in no particular order; when two disagree, the later-dated document wins")
+    prompt = PROMPT.format(briefs="\n".join("- " + shown(p) for p in brief_paths), tools="- " + shown(tool_api_path), order=order,
+                           large=("\n\nLARGE DATA FILES (do not read them whole: read only the first 60 lines of each to see what"
+                                  " it holds):\n" + "\n".join("- " + shown(p) for p in large)) if large else "")
     if trace:
         trace.model_call(model, "read the brief files and write the structured rule list (spec)")
     spec = parse_json(asyncio.run(_ask(prompt, model, on_message, cwd)))

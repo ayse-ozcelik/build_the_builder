@@ -79,6 +79,9 @@ def _field(name, schema, spec, context_vars, warnings, tool_name):
 
     if name in context_vars:
         return {"type": field_type, "default": "{{%s}}" % name}
+    if "default" in schema and field_type not in ("object", "array"):
+        # the API file fixes the value: it is sent as written and the phone agent never sees the field
+        return {"type": field_type, "default": schema["default"]}
 
     out = {"type": field_type}
     if "enum" in schema:
@@ -132,11 +135,12 @@ def generate_tools(spec, base_url=None, context_vars=CONTEXT_VARS, warnings=None
                 warnings.append("%s has URL/query parameters: they are not converted" % name)
 
             body = _body_schema(operation, spec)
+            leaves, nesting = _leaves(body, spec, (), warnings, name)
             properties = {
                 field: _field(field, field_schema, spec, context_vars, warnings, name)
-                for field, field_schema in body.get("properties", {}).items()
+                for field, field_schema, _ in leaves
             }
-            required = [r for r in body.get("required", []) if r not in context_vars]
+            required = [field for field, _, needed in leaves if needed and field not in context_vars]
 
             if name in tools:
                 warnings.append("tool name %s appears twice: the later one wins" % name)
@@ -163,7 +167,53 @@ def generate_tools(spec, base_url=None, context_vars=CONTEXT_VARS, warnings=None
                 },
                 "config": dict(TOOL_CONFIG),
             }
+            if nesting:
+                tools[name]["pre_process_code"] = NEST_HOOK % {"nesting": [[f, list(p)] for f, p in nesting]}
     return tools
+
+
+# The platform takes body fields only as flat leaves. When the API wants them inside objects (an envelope such
+# as "data"), the fields are declared flat and this hook puts each one back where the API expects it.
+NEST_HOOK = """try:
+    _body = config.get('body')
+    if isinstance(_body, dict):
+        _nested = dict()
+        _moved = []
+        for _field, _parents in %(nesting)r:
+            _moved.append(_field)
+            if _field in _body:
+                _at = _nested
+                for _parent in _parents:
+                    _at = _at.setdefault(_parent, dict())
+                _at[_field] = _body[_field]
+        for _field in _body:
+            if _field not in _moved and _field not in _nested:
+                _nested[_field] = _body[_field]
+        config['body'] = _nested
+except Exception:
+    pass
+"""
+
+
+def _leaves(schema, spec, parents, warnings, tool_name, depth=0):
+    """The fields of a request body as flat leaves: ([(name, schema, required)], [(name, parents)] for nested ones)."""
+    leaves, nesting = [], []
+    needed = schema.get("required", [])
+    for field, field_schema in (schema.get("properties") or {}).items():
+        resolved = _resolve(field_schema, spec)
+        if resolved.get("type") == "object" and resolved.get("properties") and depth < 4:
+            below, below_nesting = _leaves(resolved, spec, parents + (field,), warnings, tool_name, depth + 1)
+            leaves += [(n, s, r and field in needed) for n, s, r in below]
+            nesting += below_nesting
+            continue
+        if any(field == n for n, _, _ in leaves):
+            warnings.append("%s: field name %s appears twice in the request body: the later one wins" % (tool_name, field))
+            leaves = [leaf for leaf in leaves if leaf[0] != field]
+            nesting = [n for n in nesting if n[0] != field]
+        leaves.append((field, field_schema, field in needed))
+        if parents:
+            nesting.append((field, parents))
+    return leaves, nesting
 
 
 def main(argv=None):
