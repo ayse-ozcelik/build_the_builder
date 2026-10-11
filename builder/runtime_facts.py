@@ -259,6 +259,10 @@ def _run(vars, params_json):
             if how == 'full_or_floor':
                 amount += ', or the FLOOR amount ' + fm(floor) + ' if the customer already said the full amount is too much'
             A.append('  Attempt ' + str(k) + ' proposal: payment on ' + both(d) + ' of ' + amount + '.')
+        if len(prods) > 1:
+            A.append('  These ' + str(tries) + ' attempt(s) are ALL the proposals you may make for this product after a refusal.'
+                     ' When they are used up and the customer still refuses, propose nothing more for it, not the FLOOR'
+                     ' either, and treat the product as refused.')
         values = dict(p)
         values.update(name=name, amount=fm(full), floor=fm(floor), lateness=latetext)
         S.append(fill(P.get('product_sentence'), values))
@@ -269,7 +273,10 @@ def _run(vars, params_json):
     if len(prods) == 1:
         A.append('FLOOR OFFER: never say it yourself. To make it, CALL transition_to_floor_gate; the system then says it.')
     else:
-        A.append('FLOOR OFFER (at most ' + str(P.get('floor_offer_limit') or 1) + ' time(s) per product; say exactly this sentence and do not call transition_to_floor_gate):')
+        A.append('FLOOR OFFER (at most ' + str(P.get('floor_offer_limit') or 1) + ' time(s) per product; say exactly this sentence and do not call transition_to_floor_gate).'
+                 ' Make it ONLY when the customer says the full amount of that product is too much, asks you to name an amount, or'
+                 ' proposes less than its FLOOR. A plain refusal to pay is NOT a reason for it: a refusal gets the next attempt'
+                 ' proposal of that product, if one is left.')
         A.extend(offers)
     A.append('')
     A.append('DATE CALENDAR (date: can it be recorded?):')
