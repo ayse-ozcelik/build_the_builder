@@ -1,0 +1,408 @@
+{
+ "verify_identity": {
+  "type": "function",
+  "function": {
+   "name": "verify_identity",
+   "handler": "__function__:api_call",
+   "description": "Check one security answer. Three wrong answers in total end the check.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "url": {
+      "type": "string",
+      "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/verify_identity"
+     },
+     "method": {
+      "type": "string",
+      "default": "POST"
+     },
+     "headers": {
+      "type": "object",
+      "properties": {
+       "Content-Type": {
+        "type": "string",
+        "default": "application/json"
+       }
+      }
+     },
+     "body": {
+      "type": "object",
+      "required": [
+       "field",
+       "answer"
+      ],
+      "properties": {
+       "customer_id": {
+        "type": "string",
+        "default": "{{customer_id}}"
+       },
+       "field": {
+        "type": "string",
+        "enum": [
+         "date_of_birth",
+         "phone_last4"
+        ],
+        "default": "{{field}}"
+       },
+       "answer": {
+        "type": "string",
+        "default": "{{answer}}",
+        "description": "For date_of_birth: the date as YYYY-MM-DD. Callers say dates in words, the agent converts. An unreadable value is rejected with ok=false and is not counted as a wrong answer. For phone_last4: four digits."
+       }
+      }
+     }
+    }
+   }
+  },
+  "config": {
+   "timeoutMs": 12000,
+   "maxRetries": 0
+  }
+ },
+ "get_account": {
+  "type": "function",
+  "function": {
+   "name": "get_account",
+   "handler": "__function__:api_call",
+   "description": "The late products. Refused until both questions are passed.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "url": {
+      "type": "string",
+      "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/get_account"
+     },
+     "method": {
+      "type": "string",
+      "default": "POST"
+     },
+     "headers": {
+      "type": "object",
+      "properties": {
+       "Content-Type": {
+        "type": "string",
+        "default": "application/json"
+       }
+      }
+     },
+     "body": {
+      "type": "object",
+      "required": [],
+      "properties": {
+       "customer_id": {
+        "type": "string",
+        "default": "{{customer_id}}"
+       }
+      }
+     }
+    }
+   }
+  },
+  "config": {
+   "timeoutMs": 12000,
+   "maxRetries": 0
+  }
+ },
+ "create_promise": {
+  "type": "function",
+  "function": {
+   "name": "create_promise",
+   "handler": "__function__:api_call",
+   "description": "Record a payment promise. One per product.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "url": {
+      "type": "string",
+      "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/create_promise"
+     },
+     "method": {
+      "type": "string",
+      "default": "POST"
+     },
+     "headers": {
+      "type": "object",
+      "properties": {
+       "Content-Type": {
+        "type": "string",
+        "default": "application/json"
+       }
+      }
+     },
+     "body": {
+      "type": "object",
+      "required": [
+       "product_id",
+       "amount",
+       "date"
+      ],
+      "properties": {
+       "customer_id": {
+        "type": "string",
+        "default": "{{customer_id}}"
+       },
+       "product_id": {
+        "type": "string",
+        "default": "{{product_id}}"
+       },
+       "amount": {
+        "type": "number",
+        "default": "{{amount}}"
+       },
+       "date": {
+        "type": "string",
+        "default": "{{date}}",
+        "description": "(YYYY-MM-DD)"
+       }
+      }
+     }
+    }
+   }
+  },
+  "config": {
+   "timeoutMs": 12000,
+   "maxRetries": 0
+  }
+ },
+ "add_note": {
+  "type": "function",
+  "function": {
+   "name": "add_note",
+   "handler": "__function__:api_call",
+   "description": "Brief B: record why a product ended without a promise.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "url": {
+      "type": "string",
+      "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/add_note"
+     },
+     "method": {
+      "type": "string",
+      "default": "POST"
+     },
+     "headers": {
+      "type": "object",
+      "properties": {
+       "Content-Type": {
+        "type": "string",
+        "default": "application/json"
+       }
+      }
+     },
+     "body": {
+      "type": "object",
+      "required": [
+       "product_id",
+       "reason"
+      ],
+      "properties": {
+       "customer_id": {
+        "type": "string",
+        "default": "{{customer_id}}"
+       },
+       "product_id": {
+        "type": "string",
+        "default": "{{product_id}}"
+       },
+       "reason": {
+        "type": "string",
+        "enum": [
+         "refused",
+         "hardship",
+         "dispute",
+         "paid",
+         "service_error"
+        ],
+        "default": "{{reason}}"
+       },
+       "text": {
+        "type": "string",
+        "default": "{{text}}"
+       }
+      }
+     }
+    }
+   }
+  },
+  "config": {
+   "timeoutMs": 12000,
+   "maxRetries": 0
+  }
+ },
+ "schedule_callback": {
+  "type": "function",
+  "function": {
+   "name": "schedule_callback",
+   "handler": "__function__:api_call",
+   "description": "Book a callback.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "url": {
+      "type": "string",
+      "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/schedule_callback"
+     },
+     "method": {
+      "type": "string",
+      "default": "POST"
+     },
+     "headers": {
+      "type": "object",
+      "properties": {
+       "Content-Type": {
+        "type": "string",
+        "default": "application/json"
+       }
+      }
+     },
+     "body": {
+      "type": "object",
+      "required": [
+       "date",
+       "time"
+      ],
+      "properties": {
+       "customer_id": {
+        "type": "string",
+        "default": "{{customer_id}}"
+       },
+       "date": {
+        "type": "string",
+        "default": "{{date}}",
+        "description": "(YYYY-MM-DD)"
+       },
+       "time": {
+        "type": "string",
+        "default": "{{time}}",
+        "description": "HH:MM"
+       }
+      }
+     }
+    }
+   }
+  },
+  "config": {
+   "timeoutMs": 12000,
+   "maxRetries": 0
+  }
+ },
+ "transfer_to_agent": {
+  "type": "function",
+  "function": {
+   "name": "transfer_to_agent",
+   "handler": "__function__:api_call",
+   "description": "Hand the call to a person.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "url": {
+      "type": "string",
+      "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/transfer_to_agent"
+     },
+     "method": {
+      "type": "string",
+      "default": "POST"
+     },
+     "headers": {
+      "type": "object",
+      "properties": {
+       "Content-Type": {
+        "type": "string",
+        "default": "application/json"
+       }
+      }
+     },
+     "body": {
+      "type": "object",
+      "required": [
+       "queue"
+      ],
+      "properties": {
+       "customer_id": {
+        "type": "string",
+        "default": "{{customer_id}}"
+       },
+       "queue": {
+        "type": "string",
+        "enum": [
+         "restructuring",
+         "general",
+         "support"
+        ],
+        "default": "{{queue}}"
+       }
+      }
+     }
+    }
+   }
+  },
+  "config": {
+   "timeoutMs": 12000,
+   "maxRetries": 0
+  }
+ },
+ "close_call": {
+  "type": "function",
+  "function": {
+   "name": "close_call",
+   "handler": "__function__:api_call",
+   "description": "End the call. Always the last tool call. Nothing is accepted after it.",
+   "parameters": {
+    "type": "object",
+    "properties": {
+     "url": {
+      "type": "string",
+      "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/close_call"
+     },
+     "method": {
+      "type": "string",
+      "default": "POST"
+     },
+     "headers": {
+      "type": "object",
+      "properties": {
+       "Content-Type": {
+        "type": "string",
+        "default": "application/json"
+       }
+      }
+     },
+     "body": {
+      "type": "object",
+      "required": [
+       "outcome"
+      ],
+      "properties": {
+       "customer_id": {
+        "type": "string",
+        "default": "{{customer_id}}"
+       },
+       "outcome": {
+        "type": "string",
+        "enum": [
+         "promise",
+         "paid",
+         "transferred",
+         "no_promise",
+         "not_verified",
+         "not_reached"
+        ],
+        "default": "{{outcome}}"
+       },
+       "reason": {
+        "type": "string",
+        "default": "{{reason}}",
+        "description": "Required for every outcome except promise and paid. See the table in the brief."
+       }
+      }
+     }
+    }
+   }
+  },
+  "config": {
+   "timeoutMs": 12000,
+   "maxRetries": 0
+  }
+ }
+}

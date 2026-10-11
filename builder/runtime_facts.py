@@ -206,7 +206,7 @@ def _run(vars, params_json):
     proposals = sorted(P.get('proposals') or [], key=lambda x: int(x.get('attempt') or 0))
     A = ['ACCOUNT FACTS (computed by the bank system. Use them exactly as written, never recompute dates yourself):',
          '- Today: ' + both(today) + (', a business day.' if isbd(today) else ', NOT a business day: nothing can be recorded for today, offer ' + both(nbd(today)) + ' instead.')]
-    S, ids, maxdl, first, offers = [], [], today, None, []
+    S, ids, maxdl, first, offers, deadlines = [], [], today, None, [], []
     if len(prods) > 1:
         A.append('- PRODUCTS: ' + str(len(prods)) + ', always handled in this order: '
                  + ', '.join(str(p.get(idf)) for p in prods) + '. Each product has its own amounts, deadline and attempts.')
@@ -237,6 +237,7 @@ def _run(vars, params_json):
         if dead > maxdl:
             maxdl = dead
         ids.append(str(p.get(idf)))
+        deadlines.append((name, dead))
         latetext = str(int(late)) if late == int(late) else str(late)
         A.append('- Product: ' + name + ' (' + idf + ' ' + str(p.get(idf)) + '). Always name it in these words.')
         A.append('  FULL amount: ' + fm(full) + '. ' + str(P.get('lateness_field') or 'lateness') + ': ' + latetext + '.')
@@ -275,7 +276,10 @@ def _run(vars, params_json):
     d = today
     while d <= maxdl:
         if isbd(d):
-            A.append('- ' + both(d) + (' (today)' if d == today else '') + ': OK')
+            # with several products a date can be fine for one and too late for another
+            late_for = [n + ' (its latest date is ' + both(x) + ')' for n, x in deadlines if d > x] if len(prods) > 1 else []
+            A.append('- ' + both(d) + (' (today)' if d == today else '') + ': OK'
+                     + ((' except for: ' + '; '.join(late_for)) if late_for else ''))
         else:
             A.append('- ' + both(d) + (' (today)' if d == today else '') + ': NOT possible, ' + why(d)
                      + ' -> offer the next business day ' + both(nbd(d)))

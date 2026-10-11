@@ -24,8 +24,14 @@ import runtime_facts
 from rules import TOOLS
 
 STRUCTURE_NOTE_GATE = (
-    "\n\nTHE LOWEST AMOUNT (FLOOR): you never offer it in your own words and never name it as an offer. When the rules"
-    " above say to offer it, CALL transition_to_floor_gate. The system then says the offer itself, once.")
+    "\n\nTHE LOWEST AMOUNT (FLOOR): when the rules above say to offer it, make that offer only in the way the FLOOR OFFER"
+    " line of the facts below says, and no more often than it allows."
+    "\nSEVERAL PRODUCTS: every product must end with either a recorded promise or, where the rules require one, a note."
+    " The system keeps the list and tells you after each tool result which products are still open. When none is open,"
+    " the system continues by itself.")
+SETTLED_CLOSE_TEXT = (
+    "STEP: every product has been dealt with and no promise was recorded. Do not negotiate any more. Thank the customer,"
+    " say goodbye and CALL %s with the values the closing table gives for this situation.")
 STRUCTURE_NOTE_AFTER = (
     "\n\nTHE LOWEST AMOUNT (FLOOR) HAS JUST BEEN OFFERED by the system, in the last sentence the customer heard. That was the"
     " only offer of it that is allowed here: do not offer it again and do not repeat it as a new offer. If the customer gives"
@@ -113,6 +119,43 @@ PRE_HOOK = """try:
         _ids = [x for x in str(vars.get('product_ids') or '').split(',') if x]
         if %(id_field)r in _b and len(_ids) == 1:
             _b[%(id_field)r] = _ids[0]
+        if %(id_field)r in _b:
+            vars['last_product'] = str(_b.get(%(id_field)r))
+except Exception:
+    pass
+"""
+
+# After a promise or a note: which products are settled? Code keeps this list, not the model.
+# kind is 'promise' or 'note'. A product is settled once it has a recorded promise or a note.
+SETTLE_HOOK = """try:
+    _d = result.get('data') if isinstance(result, dict) else None
+    if isinstance(_d, dict):
+        _ids = [x for x in str(vars.get('product_ids') or '').split(',') if x]
+        _pid = str(vars.get('last_product') or vars.get(%(args)r) or '')
+        if len(_ids) == 1:
+            _pid = _ids[0]
+        _done = [x for x in str(vars.get('settled') or '').split(',') if x]
+        _ok = str(_d.get(%(ok)r)).lower() == %(okv)r
+        _fails = 0
+        if _ok:
+            if _pid not in _done:
+                _done.append(_pid or ('unknown' + str(len(_done))))
+            if %(kind)r == 'promise':
+                vars['promises_made'] = int(float(vars.get('promises_made') or 0)) + 1
+        elif %(kind)r == 'promise' and 'already' not in str(_d.get('error') or '').lower():
+            _fails = int(float(vars.get('pf_' + _pid) or 0)) + 1
+            vars['pf_' + _pid] = _fails
+            _d['failed_tries_for_this_product'] = _fails
+            _d['tries_allowed_for_one_product'] = %(limit)d
+            if _fails >= %(limit)d and len(_ids) <= 1:
+                vars['promise_dead'] = 'yes'
+        vars['settled'] = ','.join(_done)
+        _open = [x for x in _ids if x not in _done]
+        if _ids and len(_done) >= len(_ids):
+            vars['all_settled'] = 'with_promise' if int(float(vars.get('promises_made') or 0)) > 0 else 'without_promise'
+        elif _ok and len(_ids) > 1:
+            _d['what_to_do_next'] = (str(_d.get('what_to_do_next') or '') + ' Products that still have neither a promise nor a note: '
+                                     + ', '.join(_open) + '. Deal with them now, one tool call per message.')
 except Exception:
     pass
 """
@@ -152,7 +195,7 @@ def facts_code(rules):
         "names": account["names"], "floor_fields": account["floor_fields"],
         "intro": account["intro"], "product_sentence": account["product_sentence"], "first_ask": account["first_ask"],
         "bands": rules["bands"], "proposals": rules["proposals"],
-        "floor_offer_line": rules["floor_offer"]["line"],
+        "floor_offer_line": rules["floor_offer"]["line"], "floor_offer_limit": rules["floor_offer"]["limit"],
     }
     # indent=1 keeps closing braces on separate lines, so the text never holds two in a row
     source = inspect.getsource(runtime_facts._run)
@@ -217,6 +260,12 @@ def model_tool(rules, tools, name, writes=True):
     tool["config"] = {"timeoutMs": 12000, "maxRetries": 0 if writes else 1}
     tool["pre_process_code"] = pre_hook(rules, name, tool)
     tool["post_process_code"] = post_hook(rules, name)
+    kind = {TOOLS["promise"]: "promise", TOOLS["note"]: "note"}.get(name)
+    if kind:
+        ok = rules["promise"]["ok"]
+        tool["post_process_code"] += _checked(SETTLE_HOOK % {
+            "args": "%s_args.%s" % (name, rules["account"]["id_field"]), "ok": ok["field"], "okv": str(ok["value"]).lower(),
+            "kind": kind, "limit": rules["promise"]["failure_limit"]})
     return tool
 
 
@@ -273,8 +322,18 @@ def compile_workflow(rules, prompts, tools):
 
     closed = lambda: {"target_node": "end", "description": "the call was closed",
                       "condition": {"logic": "or", "conditions": equals_true(response_var(T["close"], ok["field"]), ok["value"])}}
-    recorded = lambda: {"target_node": "promise_done", "description": "the promise was recorded",
-                        "condition": {"logic": "or", "conditions": equals_true(response_var(T["promise"], ok["field"]), ok["value"])}}
+    on_state = lambda target, variable, value, text: {
+        "target_node": target, "description": text,
+        "condition": {"logic": "or", "conditions": [{"variable": variable, "operator": "equals", "operand": value}]}}
+    # Leaving the negotiation is decided by code: all products settled, or recording failed for good.
+    settled = lambda: [
+        on_state("close_service_error", "promise_dead", "yes", "recording failed for good"),
+        closed(),
+        on_state("promise_done", "all_settled", "with_promise", "every product is settled and a promise was recorded"),
+        on_state("settled_close", "all_settled", "without_promise", "every product is settled and no promise was recorded")]
+    negotiation_tools = [T["promise"], T["transfer"], T["account"], T["close"]]
+    if (rules.get("notes") or {}).get("used"):
+        negotiation_tools.insert(1, T["note"])
 
     account_node = {
         "name": "get_account", "node_type": "api_request", "passthrough": True, "passthrough_default_transition": "account_facts",
@@ -300,12 +359,14 @@ def compile_workflow(rules, prompts, tools):
         "get_account": account_node,
         "account_facts": code_node("account_facts", "collect"),
         "collect": conversation("collect", negotiation + STRUCTURE_NOTE_GATE + "\n\n{{account_facts}}",
-                                [T["promise"], T["transfer"], T["account"], T["close"]], [closed(), recorded()], "{{debt_statement}}"),
+                                negotiation_tools, settled(), "{{debt_statement}}"),
         "collect_after_offer": conversation("collect_after_offer", negotiation + STRUCTURE_NOTE_AFTER + "\n\n{{account_facts}}",
-                                            [T["promise"], T["transfer"], T["account"], T["close"]], [closed(), recorded()],
-                                            "{{floor_offer_line}}"),
+                                            negotiation_tools, settled(), "{{floor_offer_line}}"),
         "promise_done": conversation("promise_done", prompts["after_promise"], [T["transfer"], T["close"]], [closed()],
                                      promise["recorded_line"]),
+        "settled_close": {"name": "settled_close", "node_type": "conversation", "task_message": SETTLED_CLOSE_TEXT % T["close"],
+                          "on_enter": {"type": "llm"}, "max_node_turns": 80,
+                          "tools": [model_tool(rules, tools, T["close"])], "transitions": [closed()]},
         "close_failed": fixed_close("close_failed", identity["failed_line"], identity["failed_ending"]),
         "close_service_error": fixed_close("close_service_error", promise["service_error_line"], promise["service_error_ending"]),
         "end": {"name": "end", "node_type": "end_call", "on_enter": {"type": "silent"}, "disable_inactivity_monitor": True,
@@ -328,10 +389,10 @@ def compile_workflow(rules, prompts, tools):
         limits.apply_tool_limit(workflow, "identity", T["identity"], counter="wrong_answers", field=identity["wrong"]["field"],
                                 equals=identity["wrong"]["value"], limit=identity["wrong_limit"], target="close_failed")
         report.append({"limit": "identity.wrong_limit", "n": identity["wrong_limit"], "how": "tool_limit", "where": "identity"})
-    for node in ("collect", "collect_after_offer"):
-        limits.apply_tool_limit(workflow, node, T["promise"], counter="promise_failures", field=ok["field"],
-                                equals=not ok["value"], limit=promise["failure_limit"], target="close_service_error")
-    report.append({"limit": "promise.failure_limit", "n": promise["failure_limit"], "how": "tool_limit", "where": "collect, collect_after_offer"})
+    report.append({"limit": "promise.failure_limit", "n": promise["failure_limit"],
+                   "how": "counted per product in the tool's hook; one product: route to the closing step", "where": "collect, collect_after_offer"})
+    report.append({"limit": "every product gets a promise or a note", "n": 1,
+                   "how": "list kept in the tool hooks; route when none is open", "where": "collect, collect_after_offer"})
     limits.add_counted_step(workflow, "floor_gate", counter="floor_offers", limit=rules["floor_offer"]["limit"],
                             within="collect_after_offer", over="collect_after_offer")
     nodes["collect"]["transitions"].append({"target_node": "floor_gate", "description": GATE_DESCRIPTION, "is_tool_call": True,

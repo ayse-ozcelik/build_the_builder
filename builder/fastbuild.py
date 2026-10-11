@@ -80,6 +80,8 @@ def main(argv=None):
     parser.add_argument("--test-brief", default="", help="practice cases to test on after the build: A, B or 'all'")
     parser.add_argument("--reps", type=int, default=1)
     parser.add_argument("--chat-turn", action="store_true", help="also send one chat turn after saving (can time out)")
+    parser.add_argument("--prompts", choices=("verbatim", "model"), default="verbatim",
+                        help="verbatim: the brief's rules word for word (same every build). model: a model rewrites them")
     parser.add_argument("--no-save", action="store_true", help="stop after compiling: nothing is sent to Freya")
     parser.add_argument("--rules", help="reuse a rules file instead of asking the model (for experiments)")
     args = parser.parse_args(argv)
@@ -117,7 +119,11 @@ def main(argv=None):
             len(rules["rules"]), len(rules.get("unmapped") or []), len(rules["endings"]), len(rules["bands"])))
         done("1 rules form")
 
-        prompts = prompts_step.write_prompts(rules, ws, trace=trace)
+        if args.prompts == "model":
+            prompts = prompts_step.write_prompts(rules, ws, trace=trace)
+        else:
+            prompts = prompts_step.verbatim_prompts(rules)
+            trace.note("step texts: fixed instructions plus the brief's rules word for word (no model call)")
         keep("prompts.json", prompts)
         done("2 step texts")
 

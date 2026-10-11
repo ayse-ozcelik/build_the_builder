@@ -1,0 +1,50 @@
+[
+ {
+  "limit": "identity.wrong_limit",
+  "n": 3,
+  "how": "route on the bank's own count (wrong_answers_left)",
+  "where": "identity"
+ },
+ {
+  "limit": "promise.failure_limit",
+  "n": 2,
+  "how": "counted per product in the tool's hook; one product: route to the closing step",
+  "where": "collect, collect_after_offer"
+ },
+ {
+  "limit": "every product gets a promise or a note",
+  "n": 1,
+  "how": "list kept in the tool hooks; route when none is open",
+  "where": "collect, collect_after_offer"
+ },
+ {
+  "limit": "floor_offer.limit",
+  "n": 1,
+  "how": "counted_step (fixed line, said on entry)",
+  "where": "floor_gate"
+ },
+ {
+  "limit": "opening.confirm_asks",
+  "n": 2,
+  "how": "prompt_only",
+  "where": "who"
+ },
+ {
+  "limit": "callback.other_time_asks",
+  "n": 1,
+  "how": "prompt_only",
+  "where": "who"
+ },
+ {
+  "limit": "attempts (band early)",
+  "n": 1,
+  "how": "prompt_only, with the allowed number and each proposal computed in code",
+  "where": "collect"
+ },
+ {
+  "limit": "attempts (band late)",
+  "n": 2,
+  "how": "prompt_only, with the allowed number and each proposal computed in code",
+  "where": "collect"
+ }
+]

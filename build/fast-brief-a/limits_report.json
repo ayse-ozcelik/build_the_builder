@@ -8,7 +8,13 @@
  {
   "limit": "promise.failure_limit",
   "n": 2,
-  "how": "tool_limit",
+  "how": "counted per product in the tool's hook; one product: route to the closing step",
+  "where": "collect, collect_after_offer"
+ },
+ {
+  "limit": "every product gets a promise or a note",
+  "n": 1,
+  "how": "list kept in the tool hooks; route when none is open",
   "where": "collect, collect_after_offer"
  },
  {

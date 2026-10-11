@@ -1,0 +1,90 @@
+{
+  "started_at": "2026-10-10T21:27:19+00:00",
+  "ended_at": "2026-10-10T22:22:49+00:00",
+  "duration_seconds": 3330.2,
+  "status": "failed",
+  "brief": "kit/briefs/brief-a.md",
+  "tool_api": "kit/tools/openapi.json",
+  "model_calls": [],
+  "workflows": [
+    {
+      "at": "2026-10-10T21:27:22+00:00",
+      "workflow_id": "fa765caf-987d-4d19-8353-4611cbb0bdd4",
+      "agent_id": "dadb25c6-fec0-41b0-8874-b1644dda388a",
+      "step_count": 12,
+      "tool_count": 6
+    }
+  ],
+  "self_tests": [],
+  "notes": [
+    {
+      "at": "2026-10-10T21:27:19+00:00",
+      "message": "rules reused from build/fast-brief-a/rules.json"
+    },
+    {
+      "at": "2026-10-10T21:27:19+00:00",
+      "message": "rules: 51 rules (26 fit no slot and go to the prompts only), 18 endings, 2 bands"
+    },
+    {
+      "at": "2026-10-10T21:27:19+00:00",
+      "message": "1 rules form took 0 s"
+    },
+    {
+      "at": "2026-10-10T21:27:19+00:00",
+      "message": "step texts: fixed instructions plus the brief's rules word for word (no model call)"
+    },
+    {
+      "at": "2026-10-10T21:27:19+00:00",
+      "message": "2 step texts took 0 s"
+    },
+    {
+      "at": "2026-10-10T21:27:19+00:00",
+      "message": "limit identity.wrong_limit = 3: route on the bank's own count (wrong_answers_left) (identity)"
+    },
+    {
+      "at": "2026-10-10T21:27:19+00:00",
+      "message": "limit promise.failure_limit = 2: tool_limit (collect, collect_after_offer)"
+    },
+    {
+      "at": "2026-10-10T21:27:19+00:00",
+      "message": "limit floor_offer.limit = 1: counted_step (fixed line, said on entry) (floor_gate)"
+    },
+    {
+      "at": "2026-10-10T21:27:19+00:00",
+      "message": "limit opening.confirm_asks = 2: prompt_only (who)"
+    },
+    {
+      "at": "2026-10-10T21:27:19+00:00",
+      "message": "limit callback.other_time_asks = 1: prompt_only (who)"
+    },
+    {
+      "at": "2026-10-10T21:27:19+00:00",
+      "message": "limit attempts (band early) = 1: prompt_only, with the allowed number and each proposal computed in code (collect)"
+    },
+    {
+      "at": "2026-10-10T21:27:19+00:00",
+      "message": "limit attempts (band late) = 2: prompt_only, with the allowed number and each proposal computed in code (collect)"
+    },
+    {
+      "at": "2026-10-10T21:27:19+00:00",
+      "message": "3 compile took 0 s"
+    },
+    {
+      "at": "2026-10-10T21:27:22+00:00",
+      "message": "4 save took 2 s"
+    },
+    {
+      "at": "2026-10-10T21:27:22+00:00",
+      "message": "build time without practice customers: 3 s"
+    },
+    {
+      "at": "2026-10-10T22:22:49+00:00",
+      "message": "build failed: TimeoutExpired: Command '['C:\\\\Users\\\\aayse\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python313\\\\python.exe', '-u', 'C:\\\\Users\\\\aayse\\\\deneme1\\\\builder\\\\kit\\\\tools\\\\run_cases.py', 'dadb25c6-fec0-41b0-8874-b1644dda388a', '--out', 'C:\\\\Users\\\\aayse\\\\deneme1\\\\builder\\\\build\\\\fast-brief-a\\\\test.json', '--reps', '3', '--brief', 'A']' timed out after -327.6493455999953 seconds"
+    }
+  ],
+  "summary": {
+    "model_call_count": 0,
+    "self_tests_passed": 0,
+    "self_tests_total": 0
+  }
+}
