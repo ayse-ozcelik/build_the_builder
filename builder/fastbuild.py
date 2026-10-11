@@ -7,6 +7,12 @@
 3. compile.py  code builds the whole workflow from the rules and prompts  (no model)
 4. save, one chat turn, optional practice customers, export, trace        (no model)
 
+Testing while developing: ONE run per customer (--reps 1, the default) on the 10 to 13 practice customers.
+Three runs each (--reps 3) only as the last check before a submission. A test never holds the build:
+after --test-seconds it is given up and its simulation is cancelled (builder/simulations.py), a run that
+shows a platform outage (no tool call in any call) is not counted and is repeated, and requests wait out
+a short outage with pauses of 10, 20 and 40 seconds (builder/freya_retry.py).
+
 The model calls run in a temporary folder that holds only the brief files and the
 tool API file; they have no shell and cannot read outside it.
 """
@@ -90,6 +96,23 @@ def run_practice(agent_id, test_brief, reps, out_path, max_seconds, style=""):
         return json.load(f)
 
 
+def is_outage(test):
+    """A run in which no customer got a single tool call and no agent turn was timed tested the platform, not the agent."""
+    rows = [r for rep in (test.get("all_rows") or [test.get("rows") or []]) for r in rep]
+    return bool(rows) and all(not r.get("tools") and not r.get("slowest_turn_s") for r in rows)
+
+
+def free_the_workspace(agent_id, trace):
+    """After a test that did not come back: stop its simulation so that the next test does not wait behind it."""
+    try:
+        import simulations
+        for sim_id, stopped, text in simulations.cancel_unfinished(agent_id):
+            trace.note("simulation %s %s (%s)" % (sim_id, "cancelled" if stopped else "could NOT be cancelled", text))
+            print("simulation %s: %s" % (sim_id, "cancelled" if stopped else "NOT cancelled, " + text), flush=True)
+    except Exception as error:  # looking after the platform must never cost the build
+        trace.note("could not look for unfinished simulations: %s" % str(error)[:200])
+
+
 def main(argv=None):
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import compile as compile_step
@@ -108,6 +131,8 @@ def main(argv=None):
     parser.add_argument("--style", default="", help="how the practice customers talk (see kit/tools/run_cases.py --style)")
     parser.add_argument("--test-seconds", type=int, default=900,
                         help="stop waiting for the practice customers after this long; the build still exports and ends")
+    parser.add_argument("--outage-reruns", type=int, default=2,
+                        help="how often to repeat a test that shows an outage of the platform (no tool call, no timed turn)")
     parser.add_argument("--chat-turn", action="store_true", help="also send one chat turn after saving (can time out)")
     parser.add_argument("--prompts", choices=("verbatim", "model"), default="verbatim",
                         help="verbatim: the brief's rules word for word (same every build). model: a model rewrites them")
@@ -186,7 +211,8 @@ def main(argv=None):
                 trace.self_test("one chat turn: the workflow starts and answers", bool(reply.strip()), reply[:200])
             except RuntimeError as error:
                 # The chat route timed out (504) on a workflow that then passed its practice run, so it proves little.
-                trace.self_test("one chat turn: the workflow starts and answers", False, "no answer: " + str(error)[:160])
+                # A 504 here does not mean the workflow is broken: the turn may still be running on the platform.
+                trace.self_test("one chat turn: the workflow starts and answers", False, "no answer (proves nothing about the agent): " + str(error)[:160])
                 print("chat turn gave no answer: %s" % str(error)[:160], flush=True)
         done("4 save")
         build_seconds = time.time() - started
@@ -194,16 +220,27 @@ def main(argv=None):
 
         if args.test_brief:
             name = "practice customers (%s, %d run(s) each%s)" % (args.test_brief, args.reps, ", style " + args.style if args.style else "")
-            try:
-                test = run_practice(ids["agent_id"], args.test_brief, args.reps, os.path.join(run_dir, "test.json"),
-                                    args.test_seconds, args.style)
+            for attempt in range(1 + max(0, args.outage_reruns)):
+                try:
+                    test = run_practice(ids["agent_id"], args.test_brief, args.reps, os.path.join(run_dir, "test.json"),
+                                        args.test_seconds, args.style)
+                except (TimeoutError, RuntimeError) as error:
+                    # The agent is saved and can still be exported: a test that hangs or cannot start must not cost the build.
+                    trace.self_test(name, False, "no result: " + str(error))
+                    print("practice customers: no result, %s" % error, flush=True)
+                    free_the_workspace(ids["agent_id"], trace)
+                    break
+                if is_outage(test) and attempt < args.outage_reruns:
+                    # Says nothing about the agent: keep the agent as it is, wait, run the same test again.
+                    trace.note("practice run %d shows a platform OUTAGE (no tool call, no timed turn): not counted, repeated in 60 s" % (attempt + 1))
+                    print("OUTAGE: no customer got a tool call. The agent is unchanged; same test again in 60 s.", flush=True)
+                    time.sleep(60)
+                    continue
                 failed = [r["id"] for r in test["final"] if not r["pass"]]
-                trace.self_test(name, not failed, "%s of %s passed%s" % (
-                    test["passed"], test["total"], "; failed: " + ", ".join(failed) if failed else ""))
-            except (TimeoutError, RuntimeError) as error:
-                # The agent is saved and can still be exported: a test that hangs or cannot start must not cost the build.
-                trace.self_test(name, False, "no result: " + str(error))
-                print("practice customers: no result, %s" % error, flush=True)
+                outage = " (platform OUTAGE: no tool call in any call, says nothing about the agent)" if is_outage(test) else ""
+                trace.self_test(name, not failed, "%s of %s passed%s%s" % (
+                    test["passed"], test["total"], "; failed: " + ", ".join(failed) if failed else "", outage))
+                break
             done("5 practice customers")
 
         export = os.path.join(ROOT, "submission", label + ".workflow.json")
