@@ -1,0 +1,32 @@
+{
+  "started_at": "2026-10-11T17:33:41+00:00",
+  "ended_at": "2026-10-11T17:37:55+00:00",
+  "duration_seconds": 254.4,
+  "status": "failed",
+  "brief": "final/day2",
+  "tool_api": "mock/openapi.json",
+  "model_calls": [
+    {
+      "at": "2026-10-11T17:33:41+00:00",
+      "model": "claude-opus-5-5",
+      "purpose": "read the brief files and write the structured rule list (spec)"
+    }
+  ],
+  "workflows": [],
+  "self_tests": [],
+  "notes": [
+    {
+      "at": "2026-10-11T17:33:41+00:00",
+      "message": "workspace: a temporary folder holding only .claude, briefs, builder, feedback, kit, out, tool_api"
+    },
+    {
+      "at": "2026-10-11T17:37:55+00:00",
+      "message": "build failed: ValueError: the spec does not fit the tool API file:\n- limit statement_sends_per_call: statement_pdf_send has no response field 'exitState'\n- limit week_change_call_once: statement_week_change has no response field 'exitState'"
+    }
+  ],
+  "summary": {
+    "model_call_count": 1,
+    "self_tests_passed": 0,
+    "self_tests_total": 0
+  }
+}

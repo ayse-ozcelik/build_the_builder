@@ -76,9 +76,20 @@ def response_fields(spec):
             fields = set()
             for response in (op.get("responses") or {}).values():
                 for media in (response.get("content") or {}).values():
-                    fields |= set((media.get("schema") or {}).get("properties") or {})
+                    _collect(media.get("schema") or {}, "", fields)
             out[name] = fields
     return out
+
+
+def _collect(schema, prefix, fields, depth=0):
+    """Add a response's field names, also those inside objects: as the bare name and as the dotted path."""
+    for field, below in (schema.get("properties") or {}).items():
+        fields.add(field)
+        fields.add(prefix + field)
+        if isinstance(below, dict) and depth < 5:
+            _collect(below, prefix + field + ".", fields, depth + 1)
+            if isinstance(below.get("items"), dict):
+                _collect(below["items"], prefix + field + ".", fields, depth + 1)
 
 
 def request_enums(spec):
