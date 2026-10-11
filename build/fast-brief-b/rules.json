@@ -10,7 +10,7 @@
   "now"
  ],
  "opening": {
-  "line": "Hello, this is a digital assistant calling from Freya Bank, and this call is recorded. Am I speaking with {{title}} {{last_name}}?",
+  "line": "Hello, I am a digital assistant calling from Freya Bank, and this call is recorded. Am I speaking with {{title}} {{last_name}}?",
   "confirm_asks": 2
  },
  "identity": {
@@ -25,7 +25,7 @@
    },
    {
     "value": "phone_last4",
-    "ask": "What are the last four digits of the phone number we have on file for you?",
+    "ask": "What are the last four digits of the phone number on file?",
     "kind": "digits",
     "send_as": "four digits"
    }
@@ -83,7 +83,7 @@
     "field": "instalment_amount"
    }
   ],
-  "intro": "Thank you. I am calling from the Freya Bank collections team about a late payment.",
+  "intro": "Thank you, your identity is verified. I am calling from the collections team of Freya Bank about a late payment.",
   "product_sentence": "Your {name} has a past-due amount of {amount} and is {lateness} days late.",
   "first_ask": "Can you pay all of them today?"
  },
@@ -176,26 +176,26 @@
  },
  "notes": {
   "used": true,
-  "when": "For each product without a promise, also when no product gets a promise, call add_note with that product_id and a reason: refused, hardship, dispute, paid or service_error. If one create_promise fails twice, call add_note with reason service_error for the failed product. On any transfer (restructuring, support, human) add no notes at all, before or after it.",
-  "every_product_without_promise": true
+  "every_product_without_promise": true,
+  "when": "For each product that ends the call without a recorded promise, call add_note with that product_id and a reason: refused, hardship, dispute, paid or service_error. This also applies when no product gets a promise, and when one create_promise fails twice (reason service_error for the failed product). On any transfer (restructuring, support, human) add no notes at all, before or after it."
  },
  "endings": [
   {
-   "when": "At least one promise was recorded and no transfer followed; with several products, promise wins whenever at least one promise was recorded",
+   "when": "At least one promise was recorded (with several products, promise wins whenever at least one promise was recorded, except after a transfer)",
    "fields": {
     "outcome": "promise"
    },
    "rule": "A46"
   },
   {
-   "when": "The customer says they already paid this past-due amount; with several products and no promise recorded, every product is noted paid",
+   "when": "The customer says they already paid; with several products, no promise recorded and every product is noted paid",
    "fields": {
     "outcome": "paid"
    },
    "rule": "A39"
   },
   {
-   "when": "The customer asks for a new payment plan or lower instalments, after transfer_to_agent with queue restructuring; also when promises were recorded before the request",
+   "when": "The customer asks for a new payment plan or lower instalments, after transfer_to_agent with queue restructuring",
    "fields": {
     "outcome": "transferred",
     "reason": "restructuring"
@@ -203,7 +203,7 @@
    "rule": "A41"
   },
   {
-   "when": "The customer insists on a human after being asked once whether the agent can help first, after transfer_to_agent with queue general",
+   "when": "The customer insists on a human, after transfer_to_agent with queue general",
    "fields": {
     "outcome": "transferred",
     "reason": "human"
@@ -219,14 +219,7 @@
    "rule": "A32"
   },
   {
-   "when": "A transfer follows a recorded promise: close as transferred with that transfer's reason (restructuring, human or support)",
-   "fields": {
-    "outcome": "transferred"
-   },
-   "rule": "A-closing-table"
-  },
-  {
-   "when": "The persuasion attempts are used up without a promise",
+   "when": "The persuasion attempts are used up with no promise; with several products, no promise recorded and the first product in get_account order whose note is not paid is noted refused",
    "fields": {
     "outcome": "no_promise",
     "reason": "refused"
@@ -234,7 +227,7 @@
    "rule": "A31"
   },
   {
-   "when": "The customer says twice that they do not want to talk, after identity is verified",
+   "when": "After identity is verified, the customer says twice that they do not want to talk",
    "fields": {
     "outcome": "no_promise",
     "reason": "refused"
@@ -242,7 +235,7 @@
    "rule": "A45"
   },
   {
-   "when": "The customer mentions illness, a death in the family or job loss, declines the customer support team and names no date or amount",
+   "when": "The customer mentions illness, a death in the family or job loss and declines the customer support team, with no promise recorded",
    "fields": {
     "outcome": "no_promise",
     "reason": "hardship"
@@ -250,7 +243,7 @@
    "rule": "A32"
   },
   {
-   "when": "The customer says the debt is not theirs, they never had the product, or it was closed or paid off in the past",
+   "when": "The customer says the debt is not theirs, they never had the product, or it was closed or paid off in the past, with no promise recorded",
    "fields": {
     "outcome": "no_promise",
     "reason": "dispute"
@@ -264,13 +257,6 @@
     "reason": "service_error"
    },
    "rule": "A37"
-  },
-  {
-   "when": "Several products, no promise recorded and not every product noted paid: the reason is that of the first product, in get_account order, whose note is not paid (refused, hardship, dispute or service_error)",
-   "fields": {
-    "outcome": "no_promise"
-   },
-   "rule": "B-closing"
   },
   {
    "when": "Three wrong security answers in total",
@@ -289,7 +275,7 @@
    "rule": "A15"
   },
   {
-   "when": "The customer says twice that they do not want to talk, before identity is verified",
+   "when": "Before identity is verified, the customer says twice that they do not want to talk",
    "fields": {
     "outcome": "not_verified",
     "reason": "declined"
@@ -297,7 +283,7 @@
    "rule": "A45"
   },
   {
-   "when": "Someone else answers and a callback inside the window was booked with schedule_callback",
+   "when": "Someone else answers and a callback was scheduled with schedule_callback",
    "fields": {
     "outcome": "not_reached",
     "reason": "callback"
@@ -305,7 +291,7 @@
    "rule": "A6"
   },
   {
-   "when": "Someone else answers and the second offered day or time is also outside the callback window",
+   "when": "Someone else answers and the second offered time is also outside the callback window",
    "fields": {
     "outcome": "not_reached",
     "reason": "no_callback"
@@ -338,35 +324,35 @@
   }
  ],
  "tool_descriptions": {
-  "verify_identity": "Checks one security answer. Call it each time the customer answers a security question, with customer_id, field (date_of_birth first, then phone_last4) and answer; send a date of birth as YYYY-MM-DD and the phone answer as four digits. Never call it with an answer from a relative or anyone other than the customer.",
-  "get_account": "Returns the customer's one to three late products with past_due, days_late and floor. Call it once, with customer_id, right after both security questions pass and before stating any debt.",
-  "create_promise": "Records one payment promise for one product. Call it once per product, with customer_id, product_id, amount and date, only after the product, amount and date were read back and the customer gave a clear yes to \"Do you confirm?\"; if it fails, try once more.",
-  "add_note": "Records why a product ended without a promise. Call it for each product without a promise, with customer_id, that product_id and reason refused, hardship, dispute, paid or service_error, also when no product gets a promise; never call it when the call is transferred.",
-  "schedule_callback": "Books a callback. Call it with customer_id, date and time (HH:MM) when someone else answers and gives a time that is today or the next business day, from 10:00 to 19:00 both included, and later than now; then close as not_reached / callback.",
-  "transfer_to_agent": "Hands the call to a person. Call it with customer_id and queue restructuring when the customer asks for a new payment plan or lower instalments, queue general when the customer insists on a human after being asked once whether you can help first, and queue support when a customer who mentions illness, a death in the family or job loss accepts the customer support team.",
-  "close_call": "Ends the call. Call it exactly once, as the last tool call of every call, after thanking the customer and saying goodbye, with customer_id, the outcome and, where the closing table lists one, the reason."
+  "verify_identity": "Checks one security answer. CALL it once for each answer the customer gives: first with field date_of_birth and the answer as YYYY-MM-DD, then with field phone_last4 and four digits. Only the customer may answer, never a relative.",
+  "get_account": "Returns the customer's late products (one to three). CALL it once, right after both security questions pass, before stating any debt.",
+  "create_promise": "Records a payment promise for one product. CALL it only after the customer gave a clear yes to the read-back of product, amount and date, once per product. If it fails, call it once more for that product.",
+  "add_note": "Records why a product ended without a promise. CALL it for each product without a recorded promise, with that product_id and reason refused, hardship, dispute, paid or service_error, also when no product gets a promise. Never call it on a call that is transferred.",
+  "schedule_callback": "Books a callback. CALL it when someone else answers and gives a time for today or the next business day from 10:00 to 19:00, later than now, with the date and the time (HH:MM).",
+  "transfer_to_agent": "Hands the call to a person. CALL it with queue restructuring when the customer asks for a new payment plan or lower instalments, queue general when the customer insists on a human after you asked once whether you can help first, and queue support when a customer who mentioned illness, a death in the family or job loss accepts the customer support team.",
+  "close_call": "Ends the call. CALL it exactly once, as the last tool call, after thanking the customer and saying goodbye, with the outcome and, where the table lists one, the reason."
  },
  "tool_results": {
   "verify_identity": [
    [
     "hint",
     "day_month_swapped",
-    "The customer gave day and month the other way round. Ask them to say the month as a word and call verify_identity again. This retry does not count as a wrong answer."
-   ],
-   [
-    "ok",
-    false,
-    "The check was not carried out: the value was unreadable and rejected. Nothing was recorded and it does not count as a wrong answer. Do not say the answer was checked; convert the date to YYYY-MM-DD, or ask again, and call verify_identity again."
+    "The customer gave day and month the other way round. Ask them to say the month as a word and send the answer again. This retry does not count as a wrong answer."
    ],
    [
     "all_verified",
     true,
-    "Both security questions passed. Call get_account, then state the debt."
+    "Both questions passed. Call get_account, then state the debt."
+   ],
+   [
+    "ok",
+    false,
+    "The answer was not checked: the value could not be read. It is not counted as a wrong answer. Ask again and send a date of birth as YYYY-MM-DD or the phone digits as four digits. Do not say the answer was right or wrong."
    ],
    [
     "wrong_answers_left",
     0,
-    "Three wrong answers in total: the check has failed for good. Do not state the debt. Tell the customer to use the mobile app or a branch, thank them, say goodbye and close as not_verified / failed."
+    "Three wrong answers in total. The check has ended. Do not state the debt. Tell the customer to use the mobile app or a branch, thank them, say goodbye and close as not_verified / failed."
    ],
    [
     "verified",
@@ -376,63 +362,63 @@
    [
     "verified",
     false,
-    "Wrong answer. The same question may be asked again; three wrong answers in total, whichever question they were on, end the check."
+    "Wrong answer. It counts toward the three wrong answers in total. Ask the question again if tries are left."
    ],
    [
     "*",
     "",
-    "The service failed and nothing was recorded. Do not say the identity is verified. Repeat the call."
+    "The service failed and nothing was checked. Do not claim the customer is verified. Repeat the call. Do not state the debt before all_verified is true."
    ]
   ],
   "get_account": [
    [
     "ok",
     true,
-    "The late products are in products. Say you are calling from the collections team about a late payment, state every late product in one sentence each (name in words, past-due amount, days late), then ask whether the customer can pay all of them today."
+    "The late products are in products. State every late product, one sentence each, with its name, past_due and days_late, before asking for anything."
    ],
    [
     "ok",
     false,
-    "The account was not returned; it is refused until both security questions are passed. Nothing was recorded. Do not state or invent any debt, amount or date."
+    "The account was not returned (refused until both questions are passed). Nothing was recorded. Do not state any debt and do not invent figures. Finish the identity check first, then call again."
    ],
    [
     "*",
     "",
-    "The service failed and nothing was recorded. Do not state or invent any debt figures. Repeat the call."
+    "The service failed and nothing was returned. Repeat the call. Do not invent figures, dates or reasons and do not claim otherwise."
    ]
   ],
   "create_promise": [
    [
     "ok",
     true,
-    "The promise is recorded. Only now say it is recorded, and say: \"You will receive a text message confirming this promise.\" It cannot be changed or cancelled in this call."
+    "The promise is recorded for this product. Only now say it is recorded, and say: \"You will receive a text message confirming this promise.\" It cannot be changed or cancelled in the same call."
    ],
    [
     "ok",
     false,
-    "Nothing was recorded; do not say the promise is recorded. Try once more. If it fails again, say you could not record it; with one product close as no_promise / service_error, with several products keep the recorded promises and call add_note with reason service_error for the failed product."
+    "Nothing was recorded. Do not say the promise is recorded. Try once more. If it fails again, say you could not record it. With no other promise recorded, close as no_promise / service_error. With several products, keep the recorded promises and call add_note with reason service_error for the failed product."
    ],
    [
     "*",
     "",
-    "The service failed and nothing was recorded; do not say the promise is recorded. Try once more. If it fails again, say you could not record it; with one product close as no_promise / service_error, with several products keep the recorded promises and call add_note with reason service_error for the failed product."
+    "The service failed and nothing was recorded. Do not claim otherwise. Try once more. If it fails again, say you could not record it and treat it as service_error."
    ]
   ],
   "add_note": [
    [
     "ok",
     true,
-    "The note is recorded. Continue with the other products or close the call."
+    "The note is recorded for this product. Continue with the other products or close the call."
    ],
    [
     "ok",
     false,
-    "Nothing was recorded; do not treat the note as recorded. The call may be repeated."
+    "Nothing was recorded. Do not claim the note was recorded. The call may be repeated."
    ],
    [
     "*",
     "",
-    "The service failed and nothing was recorded; do not treat the note as recorded. The call may be repeated."
+    "The service failed and nothing was recorded. Do not claim otherwise. The call may be repeated."
    ]
   ],
   "schedule_callback": [
@@ -444,54 +430,54 @@
    [
     "ok",
     false,
-    "Nothing was recorded; do not say a callback is booked. The call may be repeated."
+    "Nothing was recorded. Do not say a callback is booked. The call may be repeated."
    ],
    [
     "*",
     "",
-    "The service failed and nothing was recorded; do not say a callback is booked. The call may be repeated."
+    "The service failed and nothing was recorded. Do not claim a callback is booked. The call may be repeated."
    ]
   ],
   "transfer_to_agent": [
    [
     "ok",
     true,
-    "The call is handed to a person. Add no notes. Thank the customer, say goodbye and close as transferred with the reason of the transfer: restructuring, human or support."
+    "The call is handed over. Add no notes. Close as transferred with the reason of the transfer: restructuring, human or support."
    ],
    [
     "ok",
     false,
-    "Nothing was recorded; do not say the call is transferred. The call may be repeated."
+    "The transfer was not carried out and nothing was recorded. Do not say the customer is being transferred. The call may be repeated."
    ],
    [
     "*",
     "",
-    "The service failed and nothing was recorded; do not say the call is transferred. The call may be repeated."
+    "The service failed and nothing was recorded. Do not claim the transfer happened. The call may be repeated."
    ]
   ],
   "close_call": [
    [
     "ok",
     true,
-    "The call is ended. Nothing is accepted after it; make no further tool call."
+    "The call is ended. Nothing is accepted after it. Make no further tool call."
    ],
    [
     "ok",
     false,
-    "Nothing was recorded; the call is not closed. Check the outcome and the reason against the closing table (reason is required for every outcome except promise and paid) and repeat the call."
+    "The call was not closed and nothing was recorded. Check the outcome and the reason against the closing table and call it again."
    ],
    [
     "*",
     "",
-    "The service failed and nothing was recorded; the call is not closed. The call may be repeated."
+    "The service failed and nothing was recorded. Do not claim otherwise. The call may be repeated."
    ]
   ]
  },
  "rules": [
   {
-   "id": "A-variables",
+   "id": "now",
    "step": "everywhere",
-   "text": "Every call starts with the call variables customer_id, first_name, last_name, title and now. Nothing else is known before the tools are called. Pass customer_id to every tool call. first_name and last_name are the person to ask for. Address the customer as title plus last name. now is the current date and time; all date rules use this, never the real clock."
+   "text": "Every call starts with the call variables customer_id, first_name, last_name, title and now. Nothing else is known before the tools are called. Pass customer_id to every tool call. Address the customer as title plus last name. now is the current date and time. All date rules use this, never the real clock."
   },
   {
    "id": "A1",
@@ -506,7 +492,7 @@
   {
    "id": "A3",
    "step": "opening",
-   "text": "Only \"yes\", \"that's me\", \"speaking\" or the customer's own name counts as confirmation. \"Hello\", \"go ahead\" and \"who is this\" do not. Ask once more. If it is still unclear after the second ask, close as not_reached / unclear. Answer a question from the customer first (rules A4 and A43). The ask that follows is the second ask."
+   "text": "Only \"yes\", \"that's me\", \"speaking\" or the customer's own name counts as confirmation. \"Hello\", \"go ahead\" and \"who is this\" do not. Ask once more. If it is still unclear after the second ask, close as not_reached / unclear. Answer a question from the customer first (rules 4 and 43). The ask that follows is the second ask."
   },
   {
    "id": "A4",
@@ -516,7 +502,7 @@
   {
    "id": "A5",
    "step": "third_party",
-   "text": "Someone else answers: do not say why you are calling. Say nothing beyond the opening sentence of rule A1. Ask when the customer can be reached."
+   "text": "Do not say why you are calling. Say nothing beyond the opening sentence of rule 1. Ask when the customer can be reached."
   },
   {
    "id": "A6",
@@ -570,7 +556,7 @@
   },
   {
    "id": "A16",
-   "step": "identity",
+   "step": "negotiation",
    "text": "After both questions pass, call get_account."
   },
   {
@@ -579,7 +565,7 @@
    "text": "Say that you are calling from the collections team about a late payment. Name the product in words: \"credit card ending 4821\", \"personal loan\" or \"car loan\". State the past-due amount and how many days late it is."
   },
   {
-   "id": "A-business-days",
+   "id": "business-days",
    "step": "negotiation",
    "text": "Business days are Monday to Friday, except Freya Bank holidays: 2026-10-26, 2026-11-11, 2026-11-26, 2026-12-25, 2027-01-01."
   },
@@ -596,7 +582,7 @@
   {
    "id": "A20",
    "step": "negotiation",
-   "text": "If the customer names a weekend day or a holiday that is not after the deadline, offer the next business day. If the named day is after the deadline, rule A23 applies."
+   "text": "If the customer names a weekend day or a holiday that is not after the deadline, offer the next business day. If the named day is after the deadline, rule 23 applies."
   },
   {
    "id": "A21",
@@ -611,7 +597,7 @@
   {
    "id": "A23",
    "step": "negotiation",
-   "text": "If the customer asks for a date after the deadline, say the latest date you can record is the deadline and offer it. If the customer refuses the deadline, treat it as a flat refusal (rule A30)."
+   "text": "If the customer asks for a date after the deadline, say the latest date you can record is the deadline and offer it. If the customer refuses the deadline, treat it as a flat refusal (rule 30)."
   },
   {
    "id": "A24",
@@ -626,22 +612,22 @@
   {
    "id": "A26",
    "step": "negotiation",
-   "text": "If the customer says the full amount is too much, offer the floor, once. Say that the rest stays overdue. If the customer refuses the floor, treat it as a flat refusal (rule A30). Attempt 2 may name the floor again, on the deadline."
+   "text": "If the customer says the full amount is too much, offer the floor, once. Say that the rest stays overdue. If the customer refuses the floor, treat it as a flat refusal (rule 30). Attempt 2 may name the floor again, on the deadline."
   },
   {
    "id": "A27",
    "step": "negotiation",
-   "text": "If the customer proposes an amount from the floor up to the full amount, both included, accept it. Below the floor, say it cannot be recorded and offer the floor once. If the customer does not accept the floor, treat it as a flat refusal (rule A30)."
+   "text": "If the customer proposes an amount from the floor up to the full amount, both included, accept it. Below the floor, say it cannot be recorded and offer the floor once. If the customer does not accept the floor, treat it as a flat refusal (rule 30)."
   },
   {
    "id": "A28",
    "step": "negotiation",
-   "text": "First ask: \"Can you make this payment today?\"."
+   "text": "First ask: \"Can you make this payment today?\". (Brief B rule 4 replaces this when there are several products: first ask whether the customer can pay all of them today.)"
   },
   {
    "id": "A29",
    "step": "negotiation",
-   "text": "A date or an amount the customer proposes is never a refusal. Handle it with the date rules (A18 to A23) and the amount rules (A24 to A27)."
+   "text": "A date or an amount the customer proposes is never a refusal. Handle it with sections 7 and 8."
   },
   {
    "id": "A30",
@@ -656,7 +642,7 @@
   {
    "id": "A32",
    "step": "negotiation",
-   "text": "If the customer mentions illness, a death in the family or job loss, say one short sentence of sympathy and make no persuasion attempt. Offer to connect them with the customer support team. If they accept, call transfer_to_agent with queue support and close as transferred / support. If they decline, close as no_promise / hardship. This rule comes before rules A30 and A41. If the customer still names a date or an amount themselves, record the promise under the date rules and the amount rules."
+   "text": "If the customer mentions illness, a death in the family or job loss, say one short sentence of sympathy and make no persuasion attempt. Offer to connect them with the customer support team. If they accept, call transfer_to_agent with queue support and close as transferred / support. If they decline, close as no_promise / hardship. This rule comes before rules 30 and 41. If the customer still names a date or an amount themselves, record the promise under sections 7 and 8."
   },
   {
    "id": "A33",
@@ -666,12 +652,12 @@
   {
    "id": "A34",
    "step": "negotiation",
-   "text": "Read the product, the amount and the date back and ask \"Do you confirm?\". Call create_promise only after a clear yes."
+   "text": "Read the product, the amount and the date back and ask \"Do you confirm?\". Call create_promise only after a clear yes. (Brief B rule 7: read all promises back together and ask for one confirmation.)"
   },
   {
    "id": "A35",
    "step": "negotiation",
-   "text": "If the customer changes the date or the amount at this step, check the new value against the date rules and the amount rules and read it back again."
+   "text": "If the customer changes the date or the amount at this step, check the new value against sections 7 and 8 and read it back again."
   },
   {
    "id": "A36",
@@ -681,7 +667,7 @@
   {
    "id": "A37",
    "step": "negotiation",
-   "text": "Say the promise is recorded only after create_promise returns ok: true. If it fails, try once more. If it fails again, say you could not record it and close as no_promise / service_error."
+   "text": "Say the promise is recorded only after create_promise returns ok: true. If it fails, try once more. If it fails again, say you could not record it and close as no_promise / service_error. (Brief B rule 11: with several products, keep the promises that were recorded and call add_note with reason service_error for the failed product.)"
   },
   {
    "id": "A38",
@@ -691,12 +677,12 @@
   {
    "id": "A39",
    "step": "negotiation",
-   "text": "\"I already paid\": say that payments can take one business day to appear, take no promise, and close as paid."
+   "text": "\"I already paid\": say that payments can take one business day to appear, take no promise, and close as paid. (Brief B rule 9: on one of several products this does not end the call. Note it and continue with the others.)"
   },
   {
    "id": "A40",
    "step": "negotiation",
-   "text": "\"This debt is not mine\" or \"I never had this product\": do not argue and do not take a promise. Close as no_promise / dispute. A claim that the product was closed or paid off in the past is a dispute. Rule A39 covers only a payment of this past-due amount."
+   "text": "\"This debt is not mine\" or \"I never had this product\": do not argue and do not take a promise. Close as no_promise / dispute. A claim that the product was closed or paid off in the past is a dispute. Rule 39 covers only a payment of this past-due amount. (Brief B rule 9: on one of several products this does not end the call. Note it and continue with the others.)"
   },
   {
    "id": "A41",
@@ -721,17 +707,17 @@
   {
    "id": "A45",
    "step": "everywhere",
-   "text": "If the customer says twice that they do not want to talk, close as no_promise / refused. Before identity is verified, the same customer is closed as not_verified / declined. Rule A42 applies before and after verification."
+   "text": "If the customer says twice that they do not want to talk, close as no_promise / refused. Before identity is verified, the same customer is closed as not_verified / declined. Rule 42 applies before and after verification."
   },
   {
    "id": "A46",
    "step": "everywhere",
-   "text": "Every call ends with exactly one close_call, with an outcome and, where the table lists one, a reason. It is the last tool call."
+   "text": "Every call ends with exactly one close_call, with an outcome and, where the table lists one, a reason. It is the last tool call. promise (no reason): at least one promise was recorded. paid (no reason): rule 39. transferred with restructuring, human, support: rules 41, 42, 32. no_promise with refused, hardship, dispute, service_error: rules 31 and 45, 32, 40, 37. not_verified with failed, declined: rules 14, 15. not_reached with callback, no_callback, wrong_number, deceased, unclear: rules 6, 7, 8, 9, 3."
   },
   {
-   "id": "A-closing-table",
+   "id": "transfer-after-promise",
    "step": "everywhere",
-   "text": "Closing table. promise, no reason: at least one promise was recorded. paid, no reason: rule A39. transferred with reason restructuring, human or support: rules A41, A42, A32. no_promise with reason refused, hardship, dispute or service_error: rules A31 and A45, A32, A40, A37. not_verified with reason failed or declined: rules A14, A15. not_reached with reason callback, no_callback, wrong_number, deceased or unclear: rules A6, A7, A8, A9, A3. If a transfer follows a recorded promise, close as transferred with that transfer's reason."
+   "text": "If a transfer follows a recorded promise, close as transferred with that transfer's reason."
   },
   {
    "id": "A47",
@@ -756,7 +742,7 @@
   {
    "id": "B4",
    "step": "negotiation",
-   "text": "First ask whether the customer can pay all of them today. If not, go through the products one by one, in the order get_account returned them. Do not ask about today again for each product. Start each product at attempt 1 of Brief A rule 30 (A30)."
+   "text": "First ask whether the customer can pay all of them today. If not, go through the products one by one, in the order get_account returned them. Do not ask about today again for each product. Start each product at attempt 1 of Brief A rule 30."
   },
   {
    "id": "B5",
@@ -786,7 +772,7 @@
   {
    "id": "B10",
    "step": "negotiation",
-   "text": "A restructuring request still transfers the call (Brief A rule 41, A41). Promises recorded before the request stay. Promises agreed but not yet recorded are not recorded. Close as transferred / restructuring. On any transfer (restructuring, support, human) add no notes at all, before or after it."
+   "text": "A restructuring request still transfers the call (Brief A rule 41). Promises recorded before the request stay. Promises agreed but not yet recorded are not recorded. Close as transferred / restructuring. On any transfer (restructuring, support, human) add no notes at all, before or after it."
   },
   {
    "id": "B11",
@@ -796,10 +782,11 @@
   {
    "id": "B-closing",
    "step": "everywhere",
-   "text": "The outcome table of Brief A applies. With no promise recorded: if every product is noted paid, close as paid. Otherwise close as no_promise with the reason of the first product, in get_account order, whose note is not paid. With several products, promise wins whenever at least one promise was recorded, except rule B10."
+   "text": "The outcome table of Brief A applies. With no promise recorded: if every product is noted paid, close as paid. Otherwise close as no_promise with the reason of the first product, in get_account order, whose note is not paid. With several products, promise wins whenever at least one promise was recorded, except rule 10 above."
   }
  ],
  "unmapped": [
+  "A3",
   "A4",
   "A5",
   "A9",
@@ -820,11 +807,13 @@
   "A36",
   "A39",
   "A40",
+  "A41",
   "A42",
   "A43",
   "A44",
   "A45",
   "B4",
+  "B5",
   "B6",
   "B7",
   "B9",

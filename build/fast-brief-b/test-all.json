@@ -1,9 +1,9 @@
 {
  "agent_id": "dadb25c6-fec0-41b0-8874-b1644dda388a",
- "simulation_id": "36d58c0a-7a9a-42aa-b4a6-3f5516c0dd0f",
- "iteration_id": "9c605136-8e41-48ea-9404-56bc843ef801",
- "seconds": 659,
- "passed": 9,
+ "simulation_id": "0cc498f2-88f1-4176-bd8f-b0337d861ba5",
+ "iteration_id": "f03a9d7f-eaaa-45ab-a692-b2b347ab4ebf",
+ "seconds": 561,
+ "passed": 11,
  "total": 13,
  "runs": 3,
  "final": [
@@ -73,9 +73,9 @@
   {
    "id": "PUB-10",
    "family": "Tool failure",
-   "passes": 2,
+   "passes": 3,
    "runs": 3,
-   "pass": false
+   "pass": true
   },
   {
    "id": "PUB-11",
@@ -87,9 +87,9 @@
   {
    "id": "PUB-12",
    "family": "Multi-product",
-   "passes": 2,
+   "passes": 3,
    "runs": 3,
-   "pass": false
+   "pass": true
   },
   {
    "id": "PUB-13",
@@ -106,7 +106,7 @@
    "family": "Happy path",
    "pass": true,
    "failed": [],
-   "call_id": "fa720a3f-9433-4e30-9a8e-18a4af6d9bd8",
+   "call_id": "ba700224-3217-4fe6-8b22-1fbfb830bba7",
    "tools": [
     "verify_identity",
     "verify_identity",
@@ -114,8 +114,8 @@
     "create_promise",
     "close_call"
    ],
-   "customer_id": "c_779602b4-360",
-   "slowest_turn_s": 11.5,
+   "customer_id": "c_b316c9d4-d1a",
+   "slowest_turn_s": 1.0,
    "ended": "assistant-ended-call"
   },
   {
@@ -124,13 +124,13 @@
    "family": "Third party",
    "pass": true,
    "failed": [],
-   "call_id": "40f8b825-731f-46d6-98af-90320a924039",
+   "call_id": "aa26c7d7-9b1d-4506-9733-5c9e5226a59a",
    "tools": [
     "schedule_callback",
     "close_call"
    ],
-   "customer_id": "c_594ace47-c91",
-   "slowest_turn_s": 1.4,
+   "customer_id": "c_579a357e-826",
+   "slowest_turn_s": 8.0,
    "ended": "assistant-ended-call"
   },
   {
@@ -139,15 +139,15 @@
    "family": "Identity",
    "pass": true,
    "failed": [],
-   "call_id": "55c69fae-c22b-4cbb-a951-a96350eb0b91",
+   "call_id": "7e600561-bb2c-4915-a82f-28ff2643c15d",
    "tools": [
     "verify_identity",
     "verify_identity",
     "verify_identity",
     "close_call"
    ],
-   "customer_id": "c_a1081f6d-231",
-   "slowest_turn_s": 15.9,
+   "customer_id": "c_eb1774ee-663",
+   "slowest_turn_s": 1.9,
    "ended": "assistant-ended-call"
   },
   {
@@ -156,7 +156,7 @@
    "family": "Dates",
    "pass": true,
    "failed": [],
-   "call_id": "cf28f83d-7d10-4f84-8b6b-7b79cbb1d7b1",
+   "call_id": "d2208855-4272-4e3f-87c9-aa3341e276b2",
    "tools": [
     "verify_identity",
     "verify_identity",
@@ -164,8 +164,8 @@
     "create_promise",
     "close_call"
    ],
-   "customer_id": "c_330e46b1-a7a",
-   "slowest_turn_s": 1.8,
+   "customer_id": "c_8d2843c8-41a",
+   "slowest_turn_s": 1.1,
    "ended": "assistant-ended-call"
   },
   {
@@ -176,7 +176,7 @@
    "failed": [
     "notes [('p1', 'hardship')], expected []"
    ],
-   "call_id": "c76bea0e-f9f5-4010-9733-fbecdb830501",
+   "call_id": "43d376a8-d835-412f-9359-a32ac3de305a",
    "tools": [
     "verify_identity",
     "verify_identity",
@@ -184,8 +184,8 @@
     "add_note",
     "close_call"
    ],
-   "customer_id": "c_f250eb24-6fe",
-   "slowest_turn_s": 2.1,
+   "customer_id": "c_18cc0ac6-453",
+   "slowest_turn_s": 2.3,
    "ended": "assistant-ended-call"
   },
   {
@@ -194,7 +194,7 @@
    "family": "Amounts",
    "pass": true,
    "failed": [],
-   "call_id": "979cb34c-d49e-4e15-a70e-6ed7853d7f9e",
+   "call_id": "7a0d11dc-9a07-400b-885d-9af99261d33d",
    "tools": [
     "verify_identity",
     "verify_identity",
@@ -202,8 +202,8 @@
     "create_promise",
     "close_call"
    ],
-   "customer_id": "c_18c6df8d-16f",
-   "slowest_turn_s": 1.5,
+   "customer_id": "c_7914d202-965",
+   "slowest_turn_s": 1.4,
    "ended": "assistant-ended-call"
   },
   {
@@ -212,7 +212,7 @@
    "family": "Dates",
    "pass": true,
    "failed": [],
-   "call_id": "9c9f0409-71b9-44d0-9dda-832e31b31cc3",
+   "call_id": "97681d34-5121-4c51-b85f-80bdbf0fe8fe",
    "tools": [
     "verify_identity",
     "verify_identity",
@@ -220,8 +220,8 @@
     "create_promise",
     "close_call"
    ],
-   "customer_id": "c_b06fad86-221",
-   "slowest_turn_s": 20.5,
+   "customer_id": "c_c6e0290f-9cd",
+   "slowest_turn_s": 11.1,
    "ended": "assistant-ended-call"
   },
   {
@@ -230,18 +230,18 @@
    "family": "Already paid",
    "pass": false,
    "failed": [
-    "the call was not closed with close_call"
+    "notes [('p1', 'paid')], expected []"
    ],
-   "call_id": "1e067a93-297b-426b-8a04-b6b94dd99f1c",
+   "call_id": "92f35e17-ebb4-4eda-91ad-6c1c495cc9ac",
    "tools": [
     "verify_identity",
     "verify_identity",
     "get_account",
-    "close_call",
-    "add_note"
+    "add_note",
+    "close_call"
    ],
-   "customer_id": "c_595a67b4-234",
-   "slowest_turn_s": 1.5,
+   "customer_id": "c_605a2a4c-ee4",
+   "slowest_turn_s": 17.6,
    "ended": "assistant-ended-call"
   },
   {
@@ -250,7 +250,7 @@
    "family": "Restructuring",
    "pass": true,
    "failed": [],
-   "call_id": "bad8723c-6432-4258-9dc7-27c94e1528c0",
+   "call_id": "6800d6b3-de9e-436c-a7cd-c30cd95694b5",
    "tools": [
     "verify_identity",
     "verify_identity",
@@ -258,8 +258,8 @@
     "transfer_to_agent",
     "close_call"
    ],
-   "customer_id": "c_f7e0b048-36c",
-   "slowest_turn_s": 25.2,
+   "customer_id": "c_0f69667e-894",
+   "slowest_turn_s": 16.4,
    "ended": "assistant-ended-call"
   },
   {
@@ -268,7 +268,7 @@
    "family": "Tool failure",
    "pass": true,
    "failed": [],
-   "call_id": "1924bbc1-bb45-4d9f-a97a-24a6c4f39301",
+   "call_id": "3d54d502-7157-4aa5-bc35-2c89600d5119",
    "tools": [
     "verify_identity",
     "verify_identity",
@@ -277,8 +277,8 @@
     "create_promise",
     "close_call"
    ],
-   "customer_id": "c_4db03982-471",
-   "slowest_turn_s": 2.8,
+   "customer_id": "c_8fd2a284-d69",
+   "slowest_turn_s": 4.4,
    "ended": "assistant-ended-call"
   },
   {
@@ -287,7 +287,7 @@
    "family": "Multi-product",
    "pass": true,
    "failed": [],
-   "call_id": "cac9041f-eb22-4a03-b4e5-3066cb123e39",
+   "call_id": "86449b6c-f61b-43a6-a670-fed10b142f83",
    "tools": [
     "verify_identity",
     "verify_identity",
@@ -297,8 +297,8 @@
     "create_promise",
     "close_call"
    ],
-   "customer_id": "c_b53a7b56-7be",
-   "slowest_turn_s": 16.0,
+   "customer_id": "c_40c9bd6e-5a3",
+   "slowest_turn_s": 38.4,
    "ended": "assistant-ended-call"
   },
   {
@@ -307,7 +307,7 @@
    "family": "Multi-product",
    "pass": true,
    "failed": [],
-   "call_id": "e2867dd0-c183-42f3-a220-8252f92019f1",
+   "call_id": "f25a5e22-41d5-41b5-bab7-5fe89c1986d2",
    "tools": [
     "verify_identity",
     "verify_identity",
@@ -318,8 +318,8 @@
     "add_note",
     "close_call"
    ],
-   "customer_id": "c_08a4168b-bce",
-   "slowest_turn_s": 16.9,
+   "customer_id": "c_9434243e-f30",
+   "slowest_turn_s": 6.9,
    "ended": "assistant-ended-call"
   },
   {
@@ -328,7 +328,7 @@
    "family": "Multi-product",
    "pass": true,
    "failed": [],
-   "call_id": "b8106fe4-f9be-466d-91f2-b665f42399a7",
+   "call_id": "ba6d0075-24a7-4d1d-849f-b5dec1878066",
    "tools": [
     "verify_identity",
     "verify_identity",
@@ -337,8 +337,8 @@
     "create_promise",
     "close_call"
    ],
-   "customer_id": "c_30daee86-373",
-   "slowest_turn_s": 9.1,
+   "customer_id": "c_b3072416-5ad",
+   "slowest_turn_s": 26.2,
    "ended": "assistant-ended-call"
   }
  ],
@@ -350,7 +350,7 @@
     "family": "Happy path",
     "pass": true,
     "failed": [],
-    "call_id": "2edc45fb-b934-408a-bf8c-574603e79c5a",
+    "call_id": "488842d2-ff44-4947-b934-0bd0c01cc6e4",
     "tools": [
      "verify_identity",
      "verify_identity",
@@ -358,531 +358,40 @@
      "create_promise",
      "close_call"
     ],
-    "customer_id": "c_8a6efbc3-8d4",
-    "slowest_turn_s": 1.6,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-02",
-    "level": "medium",
-    "family": "Third party",
-    "pass": true,
-    "failed": [],
-    "call_id": "092fd7d9-a079-4028-be04-7d6e01871286",
-    "tools": [
-     "schedule_callback",
-     "close_call"
-    ],
-    "customer_id": "c_57dbf838-7f6",
-    "slowest_turn_s": 0.8,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-03",
-    "level": "medium",
-    "family": "Identity",
-    "pass": true,
-    "failed": [],
-    "call_id": "05d202ac-9071-4c50-99bb-10b62f0e7c10",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "verify_identity",
-     "close_call"
-    ],
-    "customer_id": "c_6a62f783-48a",
-    "slowest_turn_s": 5.2,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-04",
-    "level": "medium",
-    "family": "Dates",
-    "pass": true,
-    "failed": [],
-    "call_id": "b424a083-0988-4f32-87d5-2286ac98cc27",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "create_promise",
-     "close_call"
-    ],
-    "customer_id": "c_2a1d51f5-0da",
-    "slowest_turn_s": 13.9,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-05",
-    "level": "medium",
-    "family": "Hardship",
-    "pass": false,
-    "failed": [
-     "the call was not closed with close_call",
-     "conversation: The assistant failed to meet two specific success criteria: 1. No persuasion attempt: In Message 10, the assistant attempted to persuade the user to pay on a specific future date after the user had already expressed that they were unable to pay anything due to losing their job. 2. No discount, waiver or plan offered: In Message 12, the assistant offered to check if a 'smaller payment' (a partial p"
-    ],
-    "call_id": "be2a9c6c-c4f1-4af4-9c30-6e0dd6904ae5",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "close_call",
-     "add_note"
-    ],
-    "customer_id": "c_7cf9e308-bad",
-    "slowest_turn_s": 7.9,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-06",
-    "level": "hard",
-    "family": "Amounts",
-    "pass": true,
-    "failed": [],
-    "call_id": "0e88d9ad-4e4c-417d-8c13-a456d20463f0",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "create_promise",
-     "close_call"
-    ],
-    "customer_id": "c_46ae8f4f-a2c",
-    "slowest_turn_s": 3.1,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-07",
-    "level": "hard",
-    "family": "Dates",
-    "pass": true,
-    "failed": [],
-    "call_id": "4d0ad695-1b39-4334-87e3-2258f76ca5a9",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "create_promise",
-     "close_call"
-    ],
-    "customer_id": "c_4bd4b465-3db",
-    "slowest_turn_s": 21.1,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-08",
-    "level": "medium",
-    "family": "Already paid",
-    "pass": false,
-    "failed": [
-     "notes [('p1', 'paid')], expected []"
-    ],
-    "call_id": "dfba6d18-2864-414d-ac31-3e977cdd82ee",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "add_note",
-     "close_call"
-    ],
-    "customer_id": "c_22a9744b-fb0",
-    "slowest_turn_s": 9.6,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-09",
-    "level": "medium",
-    "family": "Restructuring",
-    "pass": true,
-    "failed": [],
-    "call_id": "c7db3e61-3276-4c6a-930e-7144bcd5a6a6",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "transfer_to_agent",
-     "close_call"
-    ],
-    "customer_id": "c_4516cf90-9ad",
-    "slowest_turn_s": 12.3,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-10",
-    "level": "hard",
-    "family": "Tool failure",
-    "pass": true,
-    "failed": [],
-    "call_id": "da20287a-6405-45d6-80d6-feebe8e4a3b8",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "create_promise",
-     "create_promise",
-     "close_call"
-    ],
-    "customer_id": "c_886ec38e-d56",
-    "slowest_turn_s": 23.4,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-11",
-    "level": "medium",
-    "family": "Multi-product",
-    "pass": true,
-    "failed": [],
-    "call_id": "2794c388-fe2f-43ac-afa5-08f9aea6cea1",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "create_promise",
-     "create_promise",
-     "create_promise",
-     "close_call"
-    ],
-    "customer_id": "c_96f0380c-163",
-    "slowest_turn_s": 27.8,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-12",
-    "level": "hard",
-    "family": "Multi-product",
-    "pass": false,
-    "failed": [
-     "conversation: The assistant failed to follow the specific attempt count for the car loan. While it correctly asked the phone question twice and the date of birth only once, and correctly made two attempts for the personal loan, it made two attempts for the car loan (early band) at [Message 16] and [Message 18], whereas the success criteria required exactly one attempt for that product. All other criteria, such "
-    ],
-    "call_id": "e6194e5a-de39-4ba0-b349-055e7046c9dd",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "create_promise",
-     "add_note",
-     "add_note",
-     "close_call"
-    ],
-    "customer_id": "c_e4207f6d-ba1",
-    "slowest_turn_s": 24.1,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-13",
-    "level": "hard",
-    "family": "Multi-product",
-    "pass": true,
-    "failed": [],
-    "call_id": "f9278972-c71f-44f1-8c88-17f5e466ecd4",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "create_promise",
-     "create_promise",
-     "close_call"
-    ],
-    "customer_id": "c_7edfea27-4f8",
-    "slowest_turn_s": 9.4,
-    "ended": "assistant-ended-call"
-   }
-  ],
-  [
-   {
-    "id": "PUB-01",
-    "level": "easy",
-    "family": "Happy path",
-    "pass": true,
-    "failed": [],
-    "call_id": "7f2d714a-4589-40f9-9d55-2235f76dbb4a",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "create_promise",
-     "close_call"
-    ],
-    "customer_id": "c_f9441fd4-504",
-    "slowest_turn_s": 12.2,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-02",
-    "level": "medium",
-    "family": "Third party",
-    "pass": true,
-    "failed": [],
-    "call_id": "289331e9-a070-4a48-a780-87b6be33cfad",
-    "tools": [
-     "schedule_callback",
-     "close_call"
-    ],
-    "customer_id": "c_8227d8e1-c32",
-    "slowest_turn_s": 8.3,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-03",
-    "level": "medium",
-    "family": "Identity",
-    "pass": true,
-    "failed": [],
-    "call_id": "ffc18b94-c76e-4dc5-93a7-21af5b2f2853",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "verify_identity",
-     "close_call"
-    ],
-    "customer_id": "c_6120475e-650",
-    "slowest_turn_s": 5.0,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-04",
-    "level": "medium",
-    "family": "Dates",
-    "pass": true,
-    "failed": [],
-    "call_id": "2a8394d7-599a-4f97-9107-002b3edba3ae",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "create_promise",
-     "close_call"
-    ],
-    "customer_id": "c_dfa1fecc-6d8",
-    "slowest_turn_s": 16.3,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-05",
-    "level": "medium",
-    "family": "Hardship",
-    "pass": false,
-    "failed": [
-     "notes [('p1', 'hardship')], expected []"
-    ],
-    "call_id": "3ad3a480-91fe-4c2e-a109-fe666e329059",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "add_note",
-     "close_call"
-    ],
-    "customer_id": "c_3c0205a5-3ab",
-    "slowest_turn_s": 3.8,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-06",
-    "level": "hard",
-    "family": "Amounts",
-    "pass": true,
-    "failed": [],
-    "call_id": "74ffae10-9f2e-48e1-afff-3529f1aa9910",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "create_promise",
-     "close_call"
-    ],
-    "customer_id": "c_673f0ff0-b51",
-    "slowest_turn_s": 12.8,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-07",
-    "level": "hard",
-    "family": "Dates",
-    "pass": true,
-    "failed": [],
-    "call_id": "d9f38659-d423-47b8-ba4d-d70f8578f0cb",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "create_promise",
-     "close_call"
-    ],
-    "customer_id": "c_70b34d25-4f7",
-    "slowest_turn_s": 4.6,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-08",
-    "level": "medium",
-    "family": "Already paid",
-    "pass": false,
-    "failed": [
-     "notes [('p1', 'paid')], expected []"
-    ],
-    "call_id": "bce7f329-abad-4ac7-8741-d7946fdb7831",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "add_note",
-     "close_call"
-    ],
-    "customer_id": "c_422d04c1-d97",
-    "slowest_turn_s": 10.4,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-09",
-    "level": "medium",
-    "family": "Restructuring",
-    "pass": true,
-    "failed": [],
-    "call_id": "792c3381-4330-4ec2-9388-849d18c37bc3",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "transfer_to_agent",
-     "close_call"
-    ],
-    "customer_id": "c_26091526-c06",
-    "slowest_turn_s": 3.8,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-10",
-    "level": "hard",
-    "family": "Tool failure",
-    "pass": false,
-    "failed": [
-     "conversation: - The ledger contains exactly one promise ('pr1') because the first attempt failed with an error and the second attempt succeeded. - The agent said the word 'recorded' in Message 0 ('this call is recorded'). Since this message occurred before any successful API call (the identity verification and the successful promise creation), the criterion that the agent does not say 'recorded' before a succes"
-    ],
-    "call_id": "b7c421c6-909c-493f-aa6f-52dec2035696",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "create_promise",
-     "create_promise",
-     "close_call"
-    ],
-    "customer_id": "c_fe292b9e-07d",
-    "slowest_turn_s": 11.8,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-11",
-    "level": "medium",
-    "family": "Multi-product",
-    "pass": true,
-    "failed": [],
-    "call_id": "f5870da1-6b76-4c39-b83f-6a2ede9c55cb",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "create_promise",
-     "create_promise",
-     "create_promise",
-     "close_call"
-    ],
-    "customer_id": "c_c9bea367-18b",
-    "slowest_turn_s": 2.9,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-12",
-    "level": "hard",
-    "family": "Multi-product",
-    "pass": true,
-    "failed": [],
-    "call_id": "b8d5ea97-90bb-4efd-8cbd-aa88b2de3624",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "create_promise",
-     "add_note",
-     "add_note",
-     "close_call"
-    ],
-    "customer_id": "c_bb4637c6-40d",
-    "slowest_turn_s": 1.5,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-13",
-    "level": "hard",
-    "family": "Multi-product",
-    "pass": true,
-    "failed": [],
-    "call_id": "6ec4ce94-aea8-46e7-838b-77f174e4b72e",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "create_promise",
-     "create_promise",
-     "close_call"
-    ],
-    "customer_id": "c_082c03bb-15a",
-    "slowest_turn_s": 31.5,
-    "ended": "assistant-ended-call"
-   }
-  ],
-  [
-   {
-    "id": "PUB-01",
-    "level": "easy",
-    "family": "Happy path",
-    "pass": true,
-    "failed": [],
-    "call_id": "fa720a3f-9433-4e30-9a8e-18a4af6d9bd8",
-    "tools": [
-     "verify_identity",
-     "verify_identity",
-     "get_account",
-     "create_promise",
-     "close_call"
-    ],
-    "customer_id": "c_779602b4-360",
-    "slowest_turn_s": 11.5,
-    "ended": "assistant-ended-call"
-   },
-   {
-    "id": "PUB-02",
-    "level": "medium",
-    "family": "Third party",
-    "pass": true,
-    "failed": [],
-    "call_id": "40f8b825-731f-46d6-98af-90320a924039",
-    "tools": [
-     "schedule_callback",
-     "close_call"
-    ],
-    "customer_id": "c_594ace47-c91",
+    "customer_id": "c_d18ff079-b29",
     "slowest_turn_s": 1.4,
     "ended": "assistant-ended-call"
    },
    {
+    "id": "PUB-02",
+    "level": "medium",
+    "family": "Third party",
+    "pass": true,
+    "failed": [],
+    "call_id": "82fd292e-8fda-438c-b3eb-d75c985649b7",
+    "tools": [
+     "schedule_callback",
+     "close_call"
+    ],
+    "customer_id": "c_10c9a1c0-a20",
+    "slowest_turn_s": 1.7,
+    "ended": "assistant-ended-call"
+   },
+   {
     "id": "PUB-03",
     "level": "medium",
     "family": "Identity",
     "pass": true,
     "failed": [],
-    "call_id": "55c69fae-c22b-4cbb-a951-a96350eb0b91",
+    "call_id": "752d889a-07e2-4b20-8672-bcd56017b9a5",
     "tools": [
      "verify_identity",
      "verify_identity",
      "verify_identity",
      "close_call"
     ],
-    "customer_id": "c_a1081f6d-231",
-    "slowest_turn_s": 15.9,
+    "customer_id": "c_7965c9f1-42b",
+    "slowest_turn_s": 1.2,
     "ended": "assistant-ended-call"
    },
    {
@@ -891,7 +400,7 @@
     "family": "Dates",
     "pass": true,
     "failed": [],
-    "call_id": "cf28f83d-7d10-4f84-8b6b-7b79cbb1d7b1",
+    "call_id": "33234191-c561-4406-8083-9d1dc6a6a73d",
     "tools": [
      "verify_identity",
      "verify_identity",
@@ -899,8 +408,8 @@
      "create_promise",
      "close_call"
     ],
-    "customer_id": "c_330e46b1-a7a",
-    "slowest_turn_s": 1.8,
+    "customer_id": "c_7bad1262-a8e",
+    "slowest_turn_s": 1.5,
     "ended": "assistant-ended-call"
    },
    {
@@ -911,7 +420,7 @@
     "failed": [
      "notes [('p1', 'hardship')], expected []"
     ],
-    "call_id": "c76bea0e-f9f5-4010-9733-fbecdb830501",
+    "call_id": "45d7ad51-5cb2-4698-9d6a-12bad87f3471",
     "tools": [
      "verify_identity",
      "verify_identity",
@@ -919,8 +428,8 @@
      "add_note",
      "close_call"
     ],
-    "customer_id": "c_f250eb24-6fe",
-    "slowest_turn_s": 2.1,
+    "customer_id": "c_1c436f73-439",
+    "slowest_turn_s": 7.8,
     "ended": "assistant-ended-call"
    },
    {
@@ -929,7 +438,7 @@
     "family": "Amounts",
     "pass": true,
     "failed": [],
-    "call_id": "979cb34c-d49e-4e15-a70e-6ed7853d7f9e",
+    "call_id": "e6c8e29b-cd59-459f-817c-258503b66957",
     "tools": [
      "verify_identity",
      "verify_identity",
@@ -937,8 +446,8 @@
      "create_promise",
      "close_call"
     ],
-    "customer_id": "c_18c6df8d-16f",
-    "slowest_turn_s": 1.5,
+    "customer_id": "c_3a699360-159",
+    "slowest_turn_s": 15.7,
     "ended": "assistant-ended-call"
    },
    {
@@ -947,7 +456,7 @@
     "family": "Dates",
     "pass": true,
     "failed": [],
-    "call_id": "9c9f0409-71b9-44d0-9dda-832e31b31cc3",
+    "call_id": "26031700-9f80-4696-8101-d478c4d43304",
     "tools": [
      "verify_identity",
      "verify_identity",
@@ -955,8 +464,8 @@
      "create_promise",
      "close_call"
     ],
-    "customer_id": "c_b06fad86-221",
-    "slowest_turn_s": 20.5,
+    "customer_id": "c_66e92d31-6c2",
+    "slowest_turn_s": 1.4,
     "ended": "assistant-ended-call"
    },
    {
@@ -965,18 +474,18 @@
     "family": "Already paid",
     "pass": false,
     "failed": [
-     "the call was not closed with close_call"
+     "notes [('p1', 'paid')], expected []"
     ],
-    "call_id": "1e067a93-297b-426b-8a04-b6b94dd99f1c",
+    "call_id": "03f27db8-a84f-4372-98ae-5ba247efa770",
     "tools": [
      "verify_identity",
      "verify_identity",
      "get_account",
-     "close_call",
-     "add_note"
+     "add_note",
+     "close_call"
     ],
-    "customer_id": "c_595a67b4-234",
-    "slowest_turn_s": 1.5,
+    "customer_id": "c_ed2653b7-69b",
+    "slowest_turn_s": 1.6,
     "ended": "assistant-ended-call"
    },
    {
@@ -985,7 +494,7 @@
     "family": "Restructuring",
     "pass": true,
     "failed": [],
-    "call_id": "bad8723c-6432-4258-9dc7-27c94e1528c0",
+    "call_id": "84783705-31a9-45ed-87cc-05ee48b6d366",
     "tools": [
      "verify_identity",
      "verify_identity",
@@ -993,8 +502,8 @@
      "transfer_to_agent",
      "close_call"
     ],
-    "customer_id": "c_f7e0b048-36c",
-    "slowest_turn_s": 25.2,
+    "customer_id": "c_7cf70565-000",
+    "slowest_turn_s": 4.1,
     "ended": "assistant-ended-call"
    },
    {
@@ -1003,7 +512,7 @@
     "family": "Tool failure",
     "pass": true,
     "failed": [],
-    "call_id": "1924bbc1-bb45-4d9f-a97a-24a6c4f39301",
+    "call_id": "253a3eb0-4a11-4bad-94aa-03c761f50175",
     "tools": [
      "verify_identity",
      "verify_identity",
@@ -1012,8 +521,8 @@
      "create_promise",
      "close_call"
     ],
-    "customer_id": "c_4db03982-471",
-    "slowest_turn_s": 2.8,
+    "customer_id": "c_4756ce31-696",
+    "slowest_turn_s": 21.2,
     "ended": "assistant-ended-call"
    },
    {
@@ -1022,7 +531,7 @@
     "family": "Multi-product",
     "pass": true,
     "failed": [],
-    "call_id": "cac9041f-eb22-4a03-b4e5-3066cb123e39",
+    "call_id": "de0d88c5-51f6-40e1-8e46-fdc01ce217b2",
     "tools": [
      "verify_identity",
      "verify_identity",
@@ -1032,8 +541,8 @@
      "create_promise",
      "close_call"
     ],
-    "customer_id": "c_b53a7b56-7be",
-    "slowest_turn_s": 16.0,
+    "customer_id": "c_e7673714-ae1",
+    "slowest_turn_s": 40.4,
     "ended": "assistant-ended-call"
    },
    {
@@ -1042,7 +551,7 @@
     "family": "Multi-product",
     "pass": true,
     "failed": [],
-    "call_id": "e2867dd0-c183-42f3-a220-8252f92019f1",
+    "call_id": "f9a84bdd-c305-457c-bb13-c7e443b96872",
     "tools": [
      "verify_identity",
      "verify_identity",
@@ -1053,8 +562,8 @@
      "add_note",
      "close_call"
     ],
-    "customer_id": "c_08a4168b-bce",
-    "slowest_turn_s": 16.9,
+    "customer_id": "c_de342d98-a99",
+    "slowest_turn_s": 2.7,
     "ended": "assistant-ended-call"
    },
    {
@@ -1063,7 +572,7 @@
     "family": "Multi-product",
     "pass": true,
     "failed": [],
-    "call_id": "b8106fe4-f9be-466d-91f2-b665f42399a7",
+    "call_id": "c8378ef7-3715-4677-b087-d48fd7c05a32",
     "tools": [
      "verify_identity",
      "verify_identity",
@@ -1072,8 +581,494 @@
      "create_promise",
      "close_call"
     ],
-    "customer_id": "c_30daee86-373",
-    "slowest_turn_s": 9.1,
+    "customer_id": "c_eba8f2cf-4f8",
+    "slowest_turn_s": 2.4,
+    "ended": "assistant-ended-call"
+   }
+  ],
+  [
+   {
+    "id": "PUB-01",
+    "level": "easy",
+    "family": "Happy path",
+    "pass": true,
+    "failed": [],
+    "call_id": "b3baedd8-323c-4996-8f52-7396e9bc512c",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_e001db43-8bf",
+    "slowest_turn_s": 1.8,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-02",
+    "level": "medium",
+    "family": "Third party",
+    "pass": true,
+    "failed": [],
+    "call_id": "086578ed-bcad-4e67-8cef-0d95ca63bc55",
+    "tools": [
+     "schedule_callback",
+     "close_call"
+    ],
+    "customer_id": "c_0a9d6552-028",
+    "slowest_turn_s": 5.2,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-03",
+    "level": "medium",
+    "family": "Identity",
+    "pass": true,
+    "failed": [],
+    "call_id": "c1892f1e-b00b-4e35-b870-3da52f645be7",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "verify_identity",
+     "close_call"
+    ],
+    "customer_id": "c_d3980f6c-0c3",
+    "slowest_turn_s": 2.5,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-04",
+    "level": "medium",
+    "family": "Dates",
+    "pass": true,
+    "failed": [],
+    "call_id": "4fe8ef42-2169-49f6-85c5-c014ed57a406",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_4fe43164-71f",
+    "slowest_turn_s": 1.9,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-05",
+    "level": "medium",
+    "family": "Hardship",
+    "pass": false,
+    "failed": [
+     "notes [('p1', 'hardship')], expected []"
+    ],
+    "call_id": "59d6cadf-4c0b-481e-a072-c19b006c805a",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "add_note",
+     "close_call"
+    ],
+    "customer_id": "c_977c6d83-5d5",
+    "slowest_turn_s": 2.6,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-06",
+    "level": "hard",
+    "family": "Amounts",
+    "pass": true,
+    "failed": [],
+    "call_id": "d899ee42-31ab-4754-b2fb-e0d640e5a844",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_7174c692-47c",
+    "slowest_turn_s": 6.3,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-07",
+    "level": "hard",
+    "family": "Dates",
+    "pass": true,
+    "failed": [],
+    "call_id": "aa88f15c-6671-4a67-becb-673098e7ec69",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_372c3849-0f8",
+    "slowest_turn_s": 15.2,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-08",
+    "level": "medium",
+    "family": "Already paid",
+    "pass": false,
+    "failed": [
+     "notes [('p1', 'paid')], expected []"
+    ],
+    "call_id": "c84479b3-715e-4f65-9778-6f648182c2b6",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "add_note",
+     "close_call"
+    ],
+    "customer_id": "c_337570fd-593",
+    "slowest_turn_s": 17.6,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-09",
+    "level": "medium",
+    "family": "Restructuring",
+    "pass": true,
+    "failed": [],
+    "call_id": "ca64c389-e044-49b9-85d3-3dfb583bf6cb",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "transfer_to_agent",
+     "close_call"
+    ],
+    "customer_id": "c_48a499ea-c33",
+    "slowest_turn_s": 2.6,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-10",
+    "level": "hard",
+    "family": "Tool failure",
+    "pass": true,
+    "failed": [],
+    "call_id": "cc1f32a4-1a3a-4beb-81b9-98ebb7cff7df",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_d4a49e77-d51",
+    "slowest_turn_s": 3.1,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-11",
+    "level": "medium",
+    "family": "Multi-product",
+    "pass": true,
+    "failed": [],
+    "call_id": "c84c9c1a-83fd-44ac-9d22-876ba221bb92",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "create_promise",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_592ef709-400",
+    "slowest_turn_s": 24.6,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-12",
+    "level": "hard",
+    "family": "Multi-product",
+    "pass": true,
+    "failed": [],
+    "call_id": "3997959f-22de-408e-8508-55b2ead74b25",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "add_note",
+     "add_note",
+     "close_call"
+    ],
+    "customer_id": "c_676544a5-41b",
+    "slowest_turn_s": 2.8,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-13",
+    "level": "hard",
+    "family": "Multi-product",
+    "pass": true,
+    "failed": [],
+    "call_id": "c06713f7-9d42-440a-a465-ebc1d9f17b8b",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_3113f846-82a",
+    "slowest_turn_s": 3.1,
+    "ended": "assistant-ended-call"
+   }
+  ],
+  [
+   {
+    "id": "PUB-01",
+    "level": "easy",
+    "family": "Happy path",
+    "pass": true,
+    "failed": [],
+    "call_id": "ba700224-3217-4fe6-8b22-1fbfb830bba7",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_b316c9d4-d1a",
+    "slowest_turn_s": 1.0,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-02",
+    "level": "medium",
+    "family": "Third party",
+    "pass": true,
+    "failed": [],
+    "call_id": "aa26c7d7-9b1d-4506-9733-5c9e5226a59a",
+    "tools": [
+     "schedule_callback",
+     "close_call"
+    ],
+    "customer_id": "c_579a357e-826",
+    "slowest_turn_s": 8.0,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-03",
+    "level": "medium",
+    "family": "Identity",
+    "pass": true,
+    "failed": [],
+    "call_id": "7e600561-bb2c-4915-a82f-28ff2643c15d",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "verify_identity",
+     "close_call"
+    ],
+    "customer_id": "c_eb1774ee-663",
+    "slowest_turn_s": 1.9,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-04",
+    "level": "medium",
+    "family": "Dates",
+    "pass": true,
+    "failed": [],
+    "call_id": "d2208855-4272-4e3f-87c9-aa3341e276b2",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_8d2843c8-41a",
+    "slowest_turn_s": 1.1,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-05",
+    "level": "medium",
+    "family": "Hardship",
+    "pass": false,
+    "failed": [
+     "notes [('p1', 'hardship')], expected []"
+    ],
+    "call_id": "43d376a8-d835-412f-9359-a32ac3de305a",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "add_note",
+     "close_call"
+    ],
+    "customer_id": "c_18cc0ac6-453",
+    "slowest_turn_s": 2.3,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-06",
+    "level": "hard",
+    "family": "Amounts",
+    "pass": true,
+    "failed": [],
+    "call_id": "7a0d11dc-9a07-400b-885d-9af99261d33d",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_7914d202-965",
+    "slowest_turn_s": 1.4,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-07",
+    "level": "hard",
+    "family": "Dates",
+    "pass": true,
+    "failed": [],
+    "call_id": "97681d34-5121-4c51-b85f-80bdbf0fe8fe",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_c6e0290f-9cd",
+    "slowest_turn_s": 11.1,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-08",
+    "level": "medium",
+    "family": "Already paid",
+    "pass": false,
+    "failed": [
+     "notes [('p1', 'paid')], expected []"
+    ],
+    "call_id": "92f35e17-ebb4-4eda-91ad-6c1c495cc9ac",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "add_note",
+     "close_call"
+    ],
+    "customer_id": "c_605a2a4c-ee4",
+    "slowest_turn_s": 17.6,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-09",
+    "level": "medium",
+    "family": "Restructuring",
+    "pass": true,
+    "failed": [],
+    "call_id": "6800d6b3-de9e-436c-a7cd-c30cd95694b5",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "transfer_to_agent",
+     "close_call"
+    ],
+    "customer_id": "c_0f69667e-894",
+    "slowest_turn_s": 16.4,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-10",
+    "level": "hard",
+    "family": "Tool failure",
+    "pass": true,
+    "failed": [],
+    "call_id": "3d54d502-7157-4aa5-bc35-2c89600d5119",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_8fd2a284-d69",
+    "slowest_turn_s": 4.4,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-11",
+    "level": "medium",
+    "family": "Multi-product",
+    "pass": true,
+    "failed": [],
+    "call_id": "86449b6c-f61b-43a6-a670-fed10b142f83",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "create_promise",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_40c9bd6e-5a3",
+    "slowest_turn_s": 38.4,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-12",
+    "level": "hard",
+    "family": "Multi-product",
+    "pass": true,
+    "failed": [],
+    "call_id": "f25a5e22-41d5-41b5-bab7-5fe89c1986d2",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "add_note",
+     "add_note",
+     "close_call"
+    ],
+    "customer_id": "c_9434243e-f30",
+    "slowest_turn_s": 6.9,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-13",
+    "level": "hard",
+    "family": "Multi-product",
+    "pass": true,
+    "failed": [],
+    "call_id": "ba6d0075-24a7-4d1d-849f-b5dec1878066",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_b3072416-5ad",
+    "slowest_turn_s": 26.2,
     "ended": "assistant-ended-call"
    }
   ]
